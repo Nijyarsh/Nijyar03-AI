@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://*.googleusercontent.com https://image.pollinations.ai https://www.gstatic.com; frame-src https://*.firebaseapp.com https://*.googleapis.com; connect-src 'self' https://api.groq.com https://*.googleapis.com https://*.firebaseio.com ws://127.0.0.1:* ws://localhost:*;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://*.googleusercontent.com https://image.pollinations.ai https://www.gstatic.com https://raw.githubusercontent.com; frame-src https://*.firebaseapp.com https://*.googleapis.com; connect-src 'self' https://api.groq.com https://*.googleapis.com https://*.firebaseio.com ws://127.0.0.1:* ws://localhost:*;">
     <title>Nijyar AI - Master Ultimate</title>
     
     <link rel="stylesheet" href="style.css">
@@ -21,9 +21,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" href="logo.png" type="image/png">
 </head>
 <body class="dark-mode"> 
 
+    <div id="splash-screen">
+        <div class="splash-content">
+            <div class="logo-wrapper">
+                <img src="logo.png" alt="Nijyar AI Logo" id="splash-logo">
+                <div class="loader-ring"></div>
+            </div>
+            <h1 class="splash-text">NIJYAR AI</h1>
+            <p class="splash-sub">سیستەمێ ژیرییا دەستکرد</p>
+        </div>
+    </div>
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if(splash) {
+                    splash.classList.add('splash-hidden');
+                }
+            }, 2500); // 2.5 چرکە
+        });
+    </script>
     <div class="aurora-container">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
@@ -34,7 +56,9 @@
     <div id="login-screen" class="auth-wrapper">
         <div class="auth-card glass-panel">
             <div class="auth-header">
-                <div class="ai-icon"><i class="fas fa-rocket"></i></div>
+                <div class="ai-icon">
+                    <img src="logo.png" alt="Nijyar AI Icon" style="width: 40px; height: 40px; border-radius: 10px;">
+                </div>
                 <h2>ب خێر بێی بۆ نژیار AI</h2>
                 <p style="font-size: 12px; opacity: 0.7;">سیستەمێ پێشکەفتی یێ AI</p>
             </div>
@@ -43,10 +67,32 @@
                     <input type="email" id="emailInput" placeholder="ئیمەیڵ...">
                     <i class="fas fa-envelope"></i>
                 </div>
-                <div class="input-field">
-                    <input type="password" id="passInput" placeholder="پەیڤا نهێنی...">
-                    <i class="fas fa-lock"></i>
-                </div>
+                <div class="input-field" style="position: relative; display: flex; align-items: center;">
+    <i class="fas fa-lock" style="position: absolute; right: 15px; pointer-events: none;"></i>
+    
+    <input type="password" id="passInput" placeholder="پەیڤا نهێنی..." 
+           style="width: 100%; padding: 12px 40px 12px 45px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none;">
+    
+    <div id="togglePasswordWrapper" onclick="togglePass()" 
+         style="position: absolute; left: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; z-index: 10; pointer-events: auto;">
+        <i class="fas fa-eye" id="eyeIcon" style="color: #10a37f; font-size: 16px;"></i>
+    </div>
+</div>
+
+<script>
+function togglePass() {
+    const passInput = document.getElementById('passInput');
+    const eyeIcon = document.getElementById('eyeIcon');
+    
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        passInput.type = 'password';
+        eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+</script>
                 
                 <button id="mainBtn" class="login-btn">
                     <i class="fas fa-sign-in-alt"></i> Sign In
