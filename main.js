@@ -1,4 +1,4 @@
- import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -17,6 +17,7 @@ function initSpaceDesign() {
         container.appendChild(star);
     }
 }
+
 
 // Firebase Config
 const firebaseConfig = {
@@ -73,7 +74,7 @@ window.speakText = (text) => {
 
 function getStorage() { return isGuest ? sessionStorage : localStorage; }
 
-// ✅ FIX: Smart Chat Memory Limit (slice لەجیاتی substring)
+// ✅ FIX: Smart Chat Memory Limit
 function updateLongTermMemory(userText) {
     let memory = localStorage.getItem("nijyar_long_memory") || "";
     if(userText.includes("ناڤێ من") || userText.includes("حەز دکەم") || userText.includes("ئەز ")) {
@@ -132,7 +133,7 @@ window.openArtifacts = (encodedCode) => {
 
 window.closeArtifacts = () => { document.getElementById("artifacts-overlay").classList.add("artifacts-hidden"); };
 
-// ✅ FIX: Auto Retry System (بۆ ڕێگرتن لە بچڕانی API)
+// ✅ FIX: Auto Retry System
 async function safeFetch(url, options, retries = 3) {
     try {
         const res = await fetch(url, options);
@@ -270,12 +271,25 @@ document.addEventListener("DOMContentLoaded", () => {
     if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     if(window.mermaid) mermaid.initialize({ startOnLoad: false, theme: 'dark' });
 
+    // 👁️ زێدەکرنا کۆدێ نیشاندان/ڤەشارتنا پاسوۆردی ل ڤێرێ
+    const togglePassword = document.querySelector('#togglePassword');
+    const passwordInput = document.querySelector('#passInput');
+
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    }
+
     const userInput = document.getElementById("userInput");
     if(userInput) { userInput.addEventListener("input", function() { this.style.height = "auto"; this.style.height = (this.scrollHeight) + "px"; }); }
 
     document.getElementById("stopBtn").onclick = stopAllActions;
 
-    // ✅ FIX: Mic Memory Leak Fix (داخستنا مایکڕۆفۆنێ دەمێ پەیج دهێتە گرتن)
+    // ✅ FIX: Mic Memory Leak Fix
     window.addEventListener("beforeunload", () => {
         if(mediaRecorder && mediaRecorder.state === "recording") {
             mediaRecorder.stop();
@@ -540,7 +554,6 @@ function addMsg(t, s) {
     chatBox.appendChild(d); chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' }); return d;
 }
 
-// ✅ FIX: XSS Protection Ready (ئەگەر DOMPurify هەبێت ڕێگری لە هێرش دەکات)
 function renderFormattedMessage(div, rawText) {
     const contentArea = div.querySelector('.msg-content'); if(!contentArea) return;
     
@@ -582,7 +595,6 @@ function renderFormattedMessage(div, rawText) {
     if (window.Prism) Prism.highlightAllUnder(div);
 }
 
-// ✅ FIX: Performance Fix (تایپکرن خێراتر بوو بۆ 20 لەجیاتی 5)
 function typeWriter(text, chatId, targetDiv) {
     let i = 0; isTyping = true; const contentArea = targetDiv.querySelector('.msg-content');
     if(!contentArea) return; contentArea.innerHTML = "";
