@@ -437,11 +437,10 @@ async function handleChat() {
 }
 
 async function getAIResponse(p, img, mode) {
-    /* 🔒 NIJYAR PROTECTION ENGINE - V2 */
     const _0xpart1 = "gsk_";
-    const _0xpart2 = "dUOgJoLY2R0IppfDxfwB"; 
-    const _0xpart3 = "gd93YF3bydGWWHEHbjO0wB2agTCcLEU6_ksg"; 
-    const GROQ_API_KEY = _0xpart1 + _0xpart2 + _0xpart3;
+const _0xpart2 = "aYGteUTlVF1Qmw64WsCv"; 
+const _0xpart3 = "WGdyb3FYWUGnRmL4qSVXU91YO8Nfnp5W"; 
+const GROQ_API_KEY = _0xpart1 + _0xpart2 + _0xpart3;
     let model = img ? "meta-llama/llama-4-scout-17b-16e-instruct" : "llama-3.3-70b-versatile";
     let storage = getStorage(); let history = JSON.parse(storage.getItem(`chats_${loggedInUser}`)) || {};
     let currentHistory = history[currentChatId] || [];
