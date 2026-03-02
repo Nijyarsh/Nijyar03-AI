@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- Stars Background ---
@@ -163,8 +163,6 @@ window.exportChat = () => {
     html2pdf().set({ margin: 0.5, filename: `Nijyar-AI.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: "#050610" }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }).from(chatBox).save();
 };
 
-// 💣 4. Live Camera & Screen Vision
-// 💣 4. Live Camera & Screen Vision (Advanced with UI)
 window.captureMedia = async (type) => {
     if (type === 'screen') {
         try {
@@ -178,17 +176,14 @@ window.captureMedia = async (type) => {
         return;
     }
 
-    // Camera Logic
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        
-        // دروستکرنا شاشەیا کامێرایێ ب کۆد
         const overlay = document.createElement('div');
         overlay.style.cssText = "position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; backdrop-filter: blur(10px);";
         
         const video = document.createElement('video');
         video.srcObject = stream;
-        video.setAttribute('playsinline', ''); // بۆ مۆبایلێن ئایفۆن
+        video.setAttribute('playsinline', ''); 
         video.style.cssText = "width:90%; max-width:500px; border-radius:15px; border:2px solid #10a37f; box-shadow: 0 10px 30px rgba(16, 163, 127, 0.4);";
         
         const btnContainer = document.createElement('div');
@@ -210,21 +205,19 @@ window.captureMedia = async (type) => {
 
         await video.play();
 
-        // دەمێ کلیک ل سەر گرتنا وێنەی دهێتە کرن
         captureBtn.onclick = () => {
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
             
-            stream.getTracks().forEach(t => t.stop()); // ژڤەکرنا کامێرایێ
-            overlay.remove(); // لابردنا شاشەیێ
+            stream.getTracks().forEach(t => t.stop()); 
+            overlay.remove(); 
             
             selectedImageBase64 = canvas.toDataURL('image/jpeg', 0.6);
             showImagePreview(selectedImageBase64);
             addMsg("📸 وێنەیێ کامێرایێ هاتە گرتن.", 'bot');
         };
 
-        // دەمێ کلیک ل سەر هەلوەشاندنێ (Cancel) دهێتە کرن
         closeBtn.onclick = () => {
             stream.getTracks().forEach(t => t.stop());
             overlay.remove();
@@ -240,7 +233,7 @@ onAuthStateChanged(auth, (user) => {
         loggedInUser = user.uid; isGuest = false;
         document.getElementById("login-screen").style.display = "none";
         document.getElementById("main-app").style.display = "flex";
-        document.getElementById("display-name").innerText = user.displayName;
+        document.getElementById("display-name").innerText = user.displayName || "User";
         updateSidebar(); if(!currentChatId) createNewChat();
     } else {
         document.getElementById("login-screen").style.display = "flex";
@@ -297,6 +290,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.getElementById("googleBtn")?.addEventListener("click", () => signInWithPopup(auth, provider));
+    
+    // 💣 کۆدێ دوکمەیا لۆگینێ (Sign In)
+    document.getElementById("mainBtn")?.addEventListener("click", () => {
+        const email = document.querySelector('input[type="email"]')?.value || document.querySelectorAll('input')[0]?.value;
+        const password = document.querySelector('input[type="password"]')?.value || document.querySelectorAll('input')[1]?.value;
+        
+        if (!email || !password) {
+            alert("تکایە ئیمەیڵ و پاسوۆرد بنڤێسە!");
+            return;
+        }
+        
+        const btn = document.getElementById("mainBtn");
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = "⏳...";
+        
+        signInWithEmailAndPassword(auth, email, password)
+            .then(() => { btn.innerHTML = originalHtml; })
+            .catch((error) => {
+                alert("خەلەتی: " + error.message);
+                btn.innerHTML = originalHtml;
+            });
+    });
+
     document.getElementById("guestBtn")?.addEventListener("click", () => { loggedInUser = "Guest_" + Date.now(); isGuest = true; document.getElementById("login-screen").style.display = "none"; document.getElementById("main-app").style.display = "flex"; document.getElementById("display-name").innerText = "Guest User"; createNewChat(); });
     document.getElementById("logoutBtn")?.addEventListener("click", () => { if(!isGuest) signOut(auth).then(() => location.reload()); else { sessionStorage.clear(); location.reload(); } });
     if(userInput) { userInput.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChat(); } }; }
@@ -330,8 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise; let fullText = ``;
                 for (let i = 1; i <= pdf.numPages; i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); fullText += textContent.items.map(item => item.str).join(' ') + "\n"; }
                 
-                // 💣 RAG System (Save to Global Context)
-                window.globalDocumentContext = `[زانیاریێن پەڕاوێ ${file.name}]:\n` + fullText.substring(0, 10000); // 10k limit for context
+                window.globalDocumentContext = `[زانیاریێن پەڕاوێ ${file.name}]:\n` + fullText.substring(0, 10000); 
                 addMsg(`📚 پەڕاوێ یاسایی یان زانستی (${file.name}) هاتە خویندن و خەزنکرن. نها دشێی پرسیاران ل سەر بکەی.`, 'bot');
             } catch (err) { if(userInput) userInput.value = "❌ هەڵە د خواندنێ دا."; } finally { if(userInput) userInput.disabled = false; e.target.value = ""; }
         }
@@ -351,7 +366,6 @@ async function handleChat() {
     const inp = document.getElementById("userInput"); let text = inp ? inp.value.trim() : ""; const stopBtn = document.getElementById("stopBtn");
     if(!text && !selectedImageBase64) return; if(isTyping) return; if(stopBtn) stopBtn.style.display = "block";
 
-    // 💣 Auto-Agent
     if(currentExpertMode === 'agent' || text.startsWith("/agent")) {
         const task = text.replace("/agent", "").trim();
         addMsg(`🤖 بریکار پێکهات... کار: ${task}`, 'user');
@@ -448,13 +462,11 @@ const GROQ_API_KEY = _0xpart1 + _0xpart2 + _0xpart3;
 
     let sysPrompt = aiPersonalities[mode] || aiPersonalities.pro;
     
-    // 💣 زێدەکرنا ناسنامەیا نژیار ب هەمی زمانان
     sysPrompt += "\n تێبینی گرنگ: ئەگەر بەکارهێنەر پرسیاری کرد 'تۆ کێیت' یان 'کێ دروستی کردوویت' یان 'who are you'، دەبێت بڵێیت 'من سیستمێکی ژیری دەستکردم و لەلایەن نژیار (Nijyar) دروستکراوم'. دەبێت ئەم وەڵامە بە هەمان ئەو زمانە بێت کە بەکارهێنەر پرسیارەکەی پێ کردووە (بۆ نموونە بە عەرەبی، ئیسپانی، ئینگلیزی، هتد).";
 
     let longMemory = localStorage.getItem("nijyar_long_memory");
     if(longMemory) sysPrompt += `\n[تێبینی دەربارەی نژیار: ${longMemory}]`;
     
-    // 💣 Inject RAG Context if PDF was uploaded
     if(window.globalDocumentContext) {
         sysPrompt += `\n\nئەڤە زانیاریێن پەڕاوێ یە کو پێویستە ل سەر ڤێ بەرسڤێ بدەی:\n${window.globalDocumentContext}`;
     }
