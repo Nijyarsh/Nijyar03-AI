@@ -19,14 +19,13 @@ function initSpaceDesign() {
 }
 
 const firebaseConfig = {
-    apiKey: "AIzaSyB-SkQ5Zj_j81KJ3EPd26Lku0G3voa3g-I",
+    apiKey: "AIzaSyAZFC8BDGkR0u83UIGNkqwkWaObkFND7RY",
     authDomain: "nijyar-ai.firebaseapp.com",
     projectId: "nijyar-ai",
     storageBucket: "nijyar-ai.firebasestorage.app",
     messagingSenderId: "352347592255",
     appId: "1:352347592255:web:58345445126b573eb94a8a"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -564,3 +563,4 @@ function showImagePreview(src) {
         previewContainer.style.display = "block";
     }
 }
+
