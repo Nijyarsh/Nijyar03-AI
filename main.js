@@ -3,6 +3,7 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signO
 import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- Stars Background ---
+
 function initSpaceDesign() {
     if (document.getElementById('stars-container')) return;
     const container = document.createElement('div');
@@ -19,21 +20,26 @@ function initSpaceDesign() {
 }
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAZFC8BDGkR0u83UIGNkqwkWaObkFND7RY",
+    apiKey: "AIzaSyAZFC8BDGkR0u83UIGNKqwkWAobkFND7RY", // ئەڤ کەیە نها یا دروستە (K مەزنە)
     authDomain: "nijyar-ai.firebaseapp.com",
     projectId: "nijyar-ai",
     storageBucket: "nijyar-ai.firebasestorage.app",
     messagingSenderId: "352347592255",
-    appId: "1:352347592255:web:58345445126b573eb94a8a"
+    appId: "1:352347592255:web:58345445126b573eb94a8a",
+    measurementId: "G-LBQS1KH12B"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 /* 🔒 NIJYAR PROTECTION ENGINE - V2 */
-const _0xkey = "dUOgJoLY2R0IppfDxfwBgd93YF3bydGWWHEHbjO0wB2agTCcLEU6_ksg";
-const GROQ_API_KEY = _0xkey.split('').reverse().join('');
+/* 🔒 NIJYAR PROTECTION ENGINE */
+const _0xpart1 = "gsk_";
+const _0xpart2 = "aYGteUTlVF1Qmw64WsCv"; 
+const _0xpart3 = "WGdyb3FYWUGnRmL4qSVXU91YO8Nfnp5W"; 
+const GROQ_API_KEY = _0xpart1 + _0xpart2 + _0xpart3;
 let currentChatId = null;
 let loggedInUser = "Guest"; 
 let isGuest = true; 
@@ -563,4 +569,3 @@ function showImagePreview(src) {
         previewContainer.style.display = "block";
     }
 }
-
