@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nijyar AI - Master Ultimate 2026</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://*.googleusercontent.com https://image.pollinations.ai https://www.gstatic.com; frame-src https://*.firebaseapp.com https://*.googleapis.com; connect-src 'self' ws://127.0.0.1:* ws://localhost:* https://*.googleapis.com https://*.firebaseio.com https://api.groq.com;">
+    <title>Nijyar AI - Master Ultimate</title>
+    
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -16,7 +18,6 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 </head>
@@ -51,9 +52,11 @@
                 </button>
                 
                 <button id="googleBtn" class="google-btn">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Continue with Google
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16" alt="Google Logo"> Continue with Google
                 </button>
-                
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="privacy.html" style="color: #10a37f; font-size: 12px; text-decoration: none; opacity: 0.7;">Privacy Policy</a>
+                </div>
                 <div class="divider"><span>یان</span></div>
                 
                 <button id="guestBtn" class="guest-btn">
@@ -73,15 +76,15 @@
                 <div class="ai-personality-box">
                     <p style="font-size: 11px; margin-bottom: 12px; opacity: 0.8; color: #10a37f; font-weight: bold;">🎭 مۆدێلا کارکرنێ:</p>
                     <div class="expert-modes-list">
-                        <div class="mode-item active" onclick="setExpertMode('pro', this)"><i class="fas fa-robot"></i> <span>پڕۆفیشناڵ</span></div>
-                        <div class="mode-item" onclick="setExpertMode('legal', this)"><i class="fas fa-gavel"></i> <span>پسپۆڕێ یاسایی</span></div>
-                        <div class="mode-item" onclick="setExpertMode('translator', this)"><i class="fas fa-language"></i> <span>وەرگێڕ (Translator)</span></div>
-                        <div class="mode-item" onclick="setExpertMode('teacher', this)"><i class="fas fa-graduation-cap"></i> <span>مامۆستا</span></div>
-                        <div class="mode-item" onclick="setExpertMode('code', this)"><i class="fas fa-code"></i> <span>کۆد ماستەر</span></div>
-                        <div class="mode-item" onclick="setExpertMode('live_voice', this)"><i class="fas fa-headset"></i> <span>وەرگێڕێ دەنگی</span></div>
-                        <div class="mode-item" onclick="setExpertMode('data', this)"><i class="fas fa-chart-pie"></i> <span>شیکارکەرێ داتا</span></div>
-                        <div class="mode-item" onclick="setExpertMode('agent', this)"><i class="fas fa-user-tie"></i> <span>بریکارێ سەربەخۆ</span></div>
-                        <div class="mode-item" onclick="setExpertMode('comidy', this)"><i class="fas fa-laugh-squint"></i> <span>کۆمیدی بادینی</span></div>
+                        <div class="mode-item active" onclick="window.setExpertMode('pro', this)"><i class="fas fa-robot"></i> <span>پڕۆفیشناڵ</span></div>
+                        <div class="mode-item" onclick="window.setExpertMode('legal', this)"><i class="fas fa-gavel"></i> <span>پسپۆڕێ یاسایی</span></div>
+                        <div class="mode-item" onclick="window.setExpertMode('translator', this)"><i class="fas fa-language"></i> <span>وەرگێڕ (Translator)</span></div>
+                        <div class="mode-item" onclick="window.setExpertMode('teacher', this)"><i class="fas fa-graduation-cap"></i> <span>مامۆستا</span></div>
+                        <div class="mode-item" onclick="window.setExpertMode('code', this)"><i class="fas fa-code"></i> <span>کۆد ماستەر</span></div>
+                        <div class="mode-item" onclick="window.setExpertMode('live_voice', this)"><i class="fas fa-headset"></i> <span>وەرگێڕێ دەنگی</span></div>
+                        <div class="mode-item" onclick="window.setExpertMode('data', this)"><i class="fas fa-chart-pie"></i> <span>شیکارکەرێ داتا</span></div>
+                        <div class="mode-item" onclick="window.setExpertMode('agent', this)"><i class="fas fa-user-tie"></i> <span>بریکارێ سەربەخۆ</span></div>
+                        <div class="mode-item" onclick="window.setExpertMode('comidy', this)"><i class="fas fa-laugh-squint"></i> <span>کۆمیدی بادینی</span></div>
                     </div>
                 </div>
 
@@ -112,7 +115,9 @@
                     <i class="fas fa-brain" style="color: #10a37f; margin-left: 8px;"></i>
                     <span id="display-name">Nijyar AI</span>
                 </div>
-                <button id="themeToggle" class="theme-switch-btn"><i class="fas fa-moon"></i></button>
+                <button id="themeToggle" class="theme-switch-btn" style="background: none; border: none; color: white; cursor: pointer; font-size: 20px;">
+                    <i class="fas fa-moon"></i>
+                </button>
             </header>
 
             <div id="chatBox"></div>
@@ -120,7 +125,7 @@
             <div id="artifacts-overlay" class="artifacts-hidden">
                 <div class="artifacts-header">
                     <span><i class="fas fa-laptop-code"></i> دەستکارییا ڕاستەوخۆ</span>
-                    <button onclick="closeArtifacts()" class="close-art-btn">×</button>
+                    <button onclick="window.closeArtifacts()" class="close-art-btn">×</button>
                 </div>
                 <iframe id="preview-frame"></iframe>
                 <div class="artifact-editor-box">
@@ -163,20 +168,18 @@
             </div>
         </main>
     </div>
-    <script>
-    // 💣 Disable Right Click
-    document.addEventListener('contextmenu', event => event.preventDefault());
 
-    // 💣 Disable Ctrl+U, F12, Ctrl+Shift+I
-    document.onkeydown = function(e) {
-        if (e.keyCode == 123) return false; // F12
-        if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
-        if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
-        if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
-        if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U
-    };
-</script>
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123) return false; 
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
+        };
+    </script>
+    
     <script type="module" src="main.js"></script>
 </body>
-
 </html>
