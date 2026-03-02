@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nijyar AI - Master Ultimate 2026</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body class="dark-mode"> 
+
+    <div class="aurora-container">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    <div id="stars-container"></div>
+
+    <div id="login-screen" class="auth-wrapper">
+        <div class="auth-card glass-panel">
+            <div class="auth-header">
+                <div class="ai-icon"><i class="fas fa-rocket"></i></div>
+                <h2>ب خێر بێی بۆ نژیار AI</h2>
+                <p style="font-size: 12px; opacity: 0.7;">سیستەمێ پێشکەفتی یێ ئەژدیها</p>
+            </div>
+            <div class="auth-body">
+                <div class="input-field">
+                    <input type="email" id="emailInput" placeholder="ئیمەیڵ...">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="input-field">
+                    <input type="password" id="passInput" placeholder="پەیڤا نهێنی...">
+                    <i class="fas fa-lock"></i>
+                </div>
+                
+                <button id="mainBtn" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+                
+                <button id="googleBtn" class="google-btn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Continue with Google
+                </button>
+                
+                <div class="divider"><span>یان</span></div>
+                
+                <button id="guestBtn" class="guest-btn">
+                    <i class="fas fa-user-secret"></i> وەک مێڤان (Guest)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app" class="app-container" style="display: none;">
+        <aside class="sidebar glass-panel">
+            <div class="sidebar-content">
+                <button id="newChatBtn" class="new-chat-design">
+                    <i class="fas fa-plus"></i> چاتەکا نوو
+                </button>
+                
+                <div class="ai-personality-box">
+                    <p style="font-size: 11px; margin-bottom: 12px; opacity: 0.8; color: #10a37f; font-weight: bold;">🎭 مۆدێلا کارکرنێ:</p>
+                    <div class="expert-modes-list">
+                        <div class="mode-item active" onclick="setExpertMode('pro', this)"><i class="fas fa-robot"></i> <span>پڕۆفیشناڵ</span></div>
+                        <div class="mode-item" onclick="setExpertMode('legal', this)"><i class="fas fa-gavel"></i> <span>پسپۆڕێ یاسایی</span></div>
+                        <div class="mode-item" onclick="setExpertMode('translator', this)"><i class="fas fa-language"></i> <span>وەرگێڕ (Translator)</span></div>
+                        <div class="mode-item" onclick="setExpertMode('teacher', this)"><i class="fas fa-graduation-cap"></i> <span>مامۆستا</span></div>
+                        <div class="mode-item" onclick="setExpertMode('code', this)"><i class="fas fa-code"></i> <span>کۆد ماستەر</span></div>
+                        <div class="mode-item" onclick="setExpertMode('live_voice', this)"><i class="fas fa-headset"></i> <span>وەرگێڕێ دەنگی</span></div>
+                        <div class="mode-item" onclick="setExpertMode('data', this)"><i class="fas fa-chart-pie"></i> <span>شیکارکەرێ داتا</span></div>
+                        <div class="mode-item" onclick="setExpertMode('agent', this)"><i class="fas fa-user-tie"></i> <span>بریکارێ سەربەخۆ</span></div>
+                        <div class="mode-item" onclick="setExpertMode('comidy', this)"><i class="fas fa-laugh-squint"></i> <span>کۆمیدی بادینی</span></div>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="گەڕیان د چاتان دا...">
+                </div>
+                <div id="historyList" class="history-container"></div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button id="exportBtn" class="export-btn" onclick="window.exportChat()">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button id="exportWordBtn" class="export-word-btn" onclick="window.exportWord()">
+                    <i class="fas fa-file-word"></i> Word
+                </button>
+                <button id="logoutBtn" class="logout-design">
+                    <i class="fas fa-sign-out-alt"></i> دەرکەفتن
+                </button>
+            </div>
+        </aside>
+
+        <main class="chat-main glass-panel">
+            <header class="chat-header">
+                <div class="status-badge"><span class="dot"></span> Online</div>
+                <div class="header-center">
+                    <i class="fas fa-brain" style="color: #10a37f; margin-left: 8px;"></i>
+                    <span id="display-name">Nijyar AI</span>
+                </div>
+                <button id="themeToggle" class="theme-switch-btn"><i class="fas fa-moon"></i></button>
+            </header>
+
+            <div id="chatBox"></div>
+
+            <div id="artifacts-overlay" class="artifacts-hidden">
+                <div class="artifacts-header">
+                    <span><i class="fas fa-laptop-code"></i> دەستکارییا ڕاستەوخۆ</span>
+                    <button onclick="closeArtifacts()" class="close-art-btn">×</button>
+                </div>
+                <iframe id="preview-frame"></iframe>
+                <div class="artifact-editor-box">
+                    <input type="text" id="artifactPrompt" placeholder="بێژە بۆتی: ڕەنگێ وی سوور بکە...">
+                    <button id="updateArtifactBtn" onclick="window.updateArtifactWithAI()">
+                        <i class="fas fa-magic"></i> گۆڕین
+                    </button>
+                </div>
+            </div>
+
+            <div class="input-area-container">
+                <div id="imagePreviewContainer" class="img-preview-box"></div>
+                <div class="input-wrapper">
+                    <label for="imageInput" class="icon-btn" title="پەڕاو یان وێنە (PDF/CSV/IMG)">
+                        <i class="fas fa-paperclip"></i>
+                    </label>
+                    <input type="file" id="imageInput" accept="image/*, application/pdf, text/csv, .csv" style="display:none;">
+                    
+                    <button id="cameraBtn" class="icon-btn" title="ڤەکرنا کامێرایێ" onclick="window.captureMedia('camera')">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                    <button id="screenBtn" class="icon-btn" title="شەیرکرنا شاشێ" onclick="window.captureMedia('screen')">
+                        <i class="fas fa-desktop"></i>
+                    </button>
+
+                    <button id="micBtn" class="icon-btn" title="دەنگ">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+
+                    <textarea id="userInput" placeholder="پەیاما خۆ بنڤێسە (/agent, /گەنگەشە, /وێنە...)" rows="1"></textarea>
+                    
+                    <button id="stopBtn" class="stop-btn" style="display:none;">
+                        <i class="fas fa-stop"></i>
+                    </button>
+
+                    <button id="sendBtn" class="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+    // 💣 Disable Right Click
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    // 💣 Disable Ctrl+U, F12, Ctrl+Shift+I
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123) return false; // F12
+        if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+        if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
+        if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+        if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U
+    };
+</script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
