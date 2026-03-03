@@ -346,39 +346,63 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    document.getElementById("mainBtn")?.addEventListener("click", () => {
-        const email = document.getElementById("emailInput")?.value || document.querySelector('input[type="email"]')?.value;
-        const password = document.getElementById("passInput")?.value || document.querySelector('input[type="password"]')?.value;
+    // --- چوونە ژوورڤە (Sign In) ---
+    document.getElementById("signInBtn")?.addEventListener("click", async () => {
+        const email = document.getElementById("emailInput")?.value.trim();
+        const password = document.getElementById("passInput")?.value;
+        const btn = document.getElementById("signInBtn");
         
         if (!email || !password) {
-            alert("تکایە خانەیێن ئیمەیڵ و پاسوۆردی پڕ بکە!");
+            alert("تکایە هەردوو خانەیان پڕ بکە!");
             return;
         }
         
-        const btn = document.getElementById("mainBtn");
         const originalHtml = btn.innerHTML;
         btn.innerHTML = "⏳..."; 
         
-        signInWithEmailAndPassword(auth, email, password)
-            .then(() => { 
-                btn.innerHTML = originalHtml;
-            })
-            .catch((error) => {
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
-                    createUserWithEmailAndPassword(auth, email, password)
-                        .then(() => {
-                            btn.innerHTML = originalHtml;
-                            console.log("ئەکاونتێ نوو دروست بوو.");
-                        })
-                        .catch((signUpError) => {
-                            alert("پاسوۆردێ تە پێدڤییە ژ ٦ پیتان پتر بیت: " + signUpError.message);
-                            btn.innerHTML = originalHtml;
-                        });
-                } else {
-                    alert("خەلەتی د لۆگینێ دا: " + error.message);
-                    btn.innerHTML = originalHtml;
-                }
-            });
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            btn.innerHTML = originalHtml;
+        } catch (error) {
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+                alert("ئیمەیڵ یان پەیڤا نهێنی خەڵەتە!");
+            } else {
+                alert("خەلەتی د لۆگینێ دا: " + error.message);
+            }
+            btn.innerHTML = originalHtml;
+        }
+    });
+
+    // --- دروستکرنا ئەکاونتی (Sign Up) ---
+    document.getElementById("signUpBtn")?.addEventListener("click", async () => {
+        const email = document.getElementById("emailInput")?.value.trim();
+        const password = document.getElementById("passInput")?.value;
+        const btn = document.getElementById("signUpBtn");
+        
+        if (!email || !password) {
+            alert("تکایە هەردوو خانەیان پڕ بکە!");
+            return;
+        }
+        if (password.length < 6) {
+            alert("پەیڤا نهێنی دڤێت ژ ٦ پیتان پتر بیت!");
+            return;
+        }
+        
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = "⏳..."; 
+        
+        try {
+            await createUserWithEmailAndPassword(auth, email, password);
+            btn.innerHTML = originalHtml;
+            alert("ئەکاونت ب سەرکەفتییانە دروست بوو! 🚀");
+        } catch (error) {
+            if (error.code === 'auth/email-already-in-use') {
+                alert("ئەڤ ئیمەیڵە بەری نها هاتییە تۆمارکرن!");
+            } else {
+                alert("خەلەتی: " + error.message);
+            }
+            btn.innerHTML = originalHtml;
+        }
     });
 
     document.getElementById("guestBtn")?.addEventListener("click", () => { loggedInUser = "Guest_" + Date.now(); isGuest = true; document.getElementById("login-screen").style.display = "none"; document.getElementById("main-app").style.display = "flex"; document.getElementById("display-name").innerText = "Guest User"; createNewChat(); });
