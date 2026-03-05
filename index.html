@@ -2,21 +2,24 @@
 <html lang="ku" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://*.googleusercontent.com https://image.pollinations.ai https://www.gstatic.com https://raw.githubusercontent.com; frame-src https://*.firebaseapp.com https://*.googleapis.com; connect-src 'self' https://api.groq.com https://*.googleapis.com https://*.firebaseio.com ws://127.0.0.1:* ws://localhost:*;">
-    <title>Nijyar AI - Master Ultimate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- ✅ چارەسەرییا کێشەیا گووگڵ: ڕێدان ب هەمی پەیوەندییان دا کو نەزڤڕیتەڤە -->
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
+    <meta name="google-adsense-account" content="ca-pub-7190630481565033">
+    <title>Nijyar AI - Ultimate Master</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Libraries -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,38 +29,29 @@
 </head>
 <body class="dark-mode"> 
 
-    <div id="splash-screen">
-        <div class="splash-content">
-            <div class="logo-wrapper">
-                <img src="logo.png" alt="Nijyar AI Logo" id="splash-logo">
-                <div class="loader-ring"></div>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content" style="text-align: center; width: 100%;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px; flex-direction: row-reverse;">
+                <img src="logo.png" alt="Nijyar AI" style="width: 80px; height: 80px; border-radius: 15px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/80?text=AI'">
+                <h1 class="splash-text" style="color: #fff; font-family: sans-serif; letter-spacing: 2px; margin: 0; font-size: 32px;">NIJYAR AI</h1>
             </div>
-            <h1 class="splash-text">NIJYAR AI</h1>
-            <p class="splash-sub">سیستەمێ ژیرییا دەستکرد</p>
+            <p class="splash-sub" style="color: rgba(255,255,255,0.7); font-size: 16px;">سیستەمێ ژیرییا دەستکرد ب زمانێ کوردی</p>
         </div>
     </div>
-    <script>
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('splash-screen');
-                if(splash) {
-                    splash.classList.add('splash-hidden');
-                }
-            }, 2500);
-        });
-    </script>
+
+    <!-- Backgrounds -->
     <div class="aurora-container">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
+        <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div>
     </div>
     <div id="stars-container"></div>
 
+    <!-- Login Screen -->
     <div id="login-screen" class="auth-wrapper">
         <div class="auth-card glass-panel">
             <div class="auth-header">
                 <div class="ai-icon">
-                    <img src="logo.png" alt="Nijyar AI Icon" style="width: 40px; height: 40px; border-radius: 10px;">
+                    <img src="logo.png" alt="Nijyar AI Icon" style="width: 50px; height: 50px; border-radius: 12px; margin-bottom:10px;" onerror="this.src='https://via.placeholder.com/50?text=AI'">
                 </div>
                 <h2>ب خێر بێی بۆ نژیار AI</h2>
                 <p style="font-size: 12px; opacity: 0.7;">سیستەمێ پێشکەفتی یێ AI</p>
@@ -69,153 +63,143 @@
                 </div>
                 <div class="input-field" style="position: relative; display: flex; align-items: center;">
                     <i class="fas fa-lock" style="position: absolute; right: 15px; pointer-events: none;"></i>
-                    <input type="password" id="passInput" placeholder="پەیڤا نهێنی..." style="width: 100%; padding: 12px 40px 12px 45px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none;">
-                    <div id="togglePasswordWrapper" onclick="togglePass()" style="position: absolute; left: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; z-index: 10; pointer-events: auto;">
+                    <input type="password" id="passInput" placeholder="پەیڤا نهێنی..." style="width: 100%; padding: 12px 40px 12px 45px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none; text-align:right;">
+                    <div id="togglePasswordWrapper" style="position: absolute; left: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; z-index: 10;">
                         <i class="fas fa-eye" id="eyeIcon" style="color: #10a37f; font-size: 16px;"></i>
                     </div>
                 </div>
-
-                <script>
-                function togglePass() {
-                    const passInput = document.getElementById('passInput');
-                    const eyeIcon = document.getElementById('eyeIcon');
-                    if (passInput.type === 'password') {
-                        passInput.type = 'text';
-                        eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
-                    } else {
-                        passInput.type = 'password';
-                        eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
-                    }
-                }
-                </script>
                 
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button id="signInBtn" class="login-btn" style="flex: 1;">
-                        <i class="fas fa-sign-in-alt"></i> Sign In
-                    </button>
-                    <button id="signUpBtn" class="guest-btn" style="flex: 1; border: 1px solid #10a37f; background: rgba(16, 163, 127, 0.1); margin-top: 0;">
-                        <i class="fas fa-user-plus"></i> Sign Up
-                    </button>
+                    <button id="signInBtn" class="login-btn" style="flex: 1;"><i class="fas fa-sign-in-alt"></i> چوونە ژوور</button>
+                    <button id="signUpBtn" class="guest-btn" style="flex: 1; margin-top: 0; background:rgba(16, 163, 127, 0.1); border:1px solid #10a37f;"><i class="fas fa-user-plus"></i> تۆمارکرن</button>
                 </div>
                 
                 <button id="googleBtn" class="google-btn">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16" alt="Google Logo"> Continue with Google
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google"> بەردەوام بە ب Google
                 </button>
                 <div style="text-align: center; margin-top: 15px;">
-                    <a href="privacy.html" style="color: #10a37f; font-size: 12px; text-decoration: none; opacity: 0.7;">Privacy Policy</a>
+                    <a href="privacy.html" style="color: #10a37f; font-size: 12px; text-decoration: none;">سیاسەتا پاراستنێ</a>
                 </div>
                 <div class="divider"><span>یان</span></div>
-                
-                <button id="guestBtn" class="guest-btn">
-                    <i class="fas fa-user-secret"></i> وەک مێڤان (Guest)
-                </button>
+                <button id="guestBtn" class="guest-btn" style="width:100%;"><i class="fas fa-user-secret"></i> وەک مێڤان (Guest)</button>
             </div>
         </div>
     </div>
 
+    <!-- ✅ MENU BAR & MAIN APP -->
     <div id="main-app" class="app-container" style="display: none;">
-        <aside class="sidebar glass-panel">
-            <div class="sidebar-content">
-                <button id="newChatBtn" class="new-chat-design">
+        
+        <!-- Top Menu Bar -->
+        <header class="gpt-top-bar glass-panel-header">
+            <div class="top-bar-right">
+                <button class="icon-btn-top" id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+                <div class="model-selector" id="modelSelectorBtn">
+                    <span id="currentModelText">Nijyar AI <i class="fas fa-star" style="color: #d4af37; font-size: 10px;"></i></span> 
+                    <i class="fas fa-chevron-down" style="font-size: 12px; opacity: 0.7;"></i>
+                </div>
+            </div>
+            <div class="top-bar-left">
+                <button class="icon-btn-top" id="profileBtn"><i class="far fa-user-circle"></i></button>
+                <button class="icon-btn-top" id="newChatTopBtn"><i class="far fa-edit"></i></button>
+            </div>
+        </header>
+
+        <!-- Dropdown Menu for AI Models -->
+        <div id="modelDropdown" class="model-dropdown glass-panel hidden">
+            <div class="mode-item active" data-mode="pro" data-name="Nijyar AI"><i class="fas fa-robot"></i> پڕۆفیشناڵ</div>
+            <div class="mode-item" data-mode="legal" data-name="پ. یاسایی"><i class="fas fa-gavel"></i> پسپۆڕێ یاسایی</div>
+            <div class="mode-item" data-mode="translator" data-name="وەرگێڕ"><i class="fas fa-language"></i> وەرگێڕ (Translator)</div>
+            <div class="mode-item" data-mode="teacher" data-name="مامۆستا"><i class="fas fa-graduation-cap"></i> مامۆستا</div>
+            <div class="mode-item" data-mode="code" data-name="کۆد ماستەر"><i class="fas fa-code"></i> کۆد ماستەر</div>
+            <div class="mode-item" data-mode="live_voice" data-name="وەرگێڕێ دەنگی"><i class="fas fa-headset"></i> وەرگێڕێ دەنگی</div>
+            <div class="mode-item" data-mode="data" data-name="شیکارکەرێ داتا"><i class="fas fa-chart-pie"></i> شیکارکەرێ داتا</div>
+            <div class="mode-item" data-mode="agent" data-name="بریکارێ سەربەخۆ"><i class="fas fa-user-tie"></i> بریکارێ سەربەخۆ</div>
+            <div class="mode-item" data-mode="comidy" data-name="کۆمیدی"><i class="fas fa-laugh"></i> کۆمیدی بادینی</div>
+        </div>
+
+        <!-- Sidebar Drawer -->
+        <div id="drawerOverlay" class="drawer-overlay"></div>
+        <aside id="sideDrawer" class="gpt-drawer glass-panel-drawer">
+            <div class="drawer-header">
+                <button class="new-chat-design" id="drawerNewChatBtn">
                     <i class="fas fa-plus"></i> چاتەکا نوو
                 </button>
-                
-                <div class="ai-personality-box">
-                    <p style="font-size: 11px; margin-bottom: 12px; opacity: 0.8; color: #10a37f; font-weight: bold;">🎭 مۆدێلا کارکرنێ:</p>
-                    <div class="expert-modes-list">
-                        <div class="mode-item active" onclick="window.setExpertMode('pro', this)"><i class="fas fa-robot"></i> <span>پڕۆفیشناڵ</span></div>
-                        <div class="mode-item" onclick="window.setExpertMode('legal', this)"><i class="fas fa-gavel"></i> <span>پسپۆڕێ یاسایی</span></div>
-                        <div class="mode-item" onclick="window.setExpertMode('translator', this)"><i class="fas fa-language"></i> <span>وەرگێڕ (Translator)</span></div>
-                        <div class="mode-item" onclick="window.setExpertMode('teacher', this)"><i class="fas fa-graduation-cap"></i> <span>مامۆستا</span></div>
-                        <div class="mode-item" onclick="window.setExpertMode('code', this)"><i class="fas fa-code"></i> <span>کۆد ماستەر</span></div>
-                        <div class="mode-item" onclick="window.setExpertMode('live_voice', this)"><i class="fas fa-headset"></i> <span>وەرگێڕێ دەنگی</span></div>
-                        <div class="mode-item" onclick="window.setExpertMode('data', this)"><i class="fas fa-chart-pie"></i> <span>شیکارکەرێ داتا</span></div>
-                        <div class="mode-item" onclick="window.setExpertMode('agent', this)"><i class="fas fa-user-tie"></i> <span>بریکارێ سەربەخۆ</span></div>
-                        <div class="mode-item" onclick="window.setExpertMode('comidy', this)"><i class="fas fa-laugh-squint"></i> <span>کۆمیدی بادینی</span></div>
-                    </div>
-                </div>
-
-                <div class="search-box">
+                <div class="search-box" style="margin-top:15px;">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="گەڕیان د چاتان دا...">
+                    <input type="text" id="historySearch" placeholder="گەڕیان د چاتان دا...">
                 </div>
-                <div id="historyList" class="history-container"></div>
             </div>
             
-            <div class="sidebar-footer">
-                <button id="exportBtn" class="export-btn" onclick="window.exportChat()">
-                    <i class="fas fa-file-pdf"></i> PDF
-                </button>
-                <button id="exportWordBtn" class="export-word-btn" onclick="window.exportWord()">
-                    <i class="fas fa-file-word"></i> Word
-                </button>
-                <button id="logoutBtn" class="logout-design">
-                    <i class="fas fa-sign-out-alt"></i> دەرکەفتن
-                </button>
+            <div class="drawer-body" style="flex:1; overflow-y:auto; padding: 0 15px;">
+                <div style="font-size:12px; color:var(--primary); margin: 10px 0; font-weight:bold;">مێژوویا چاتان</div>
+                <div id="historyList" class="history-list"></div>
+            </div>
+            
+            <div class="drawer-footer">
+                <button class="drawer-item export-btn" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> PDF دابەزینە</button>
+                <button class="drawer-item export-word-btn" id="exportWordBtn"><i class="fas fa-file-word"></i> Word دابەزینە</button>
+                <button class="drawer-item" id="themeToggleBtn" style="background: rgba(255,255,255,0.05); color:white;"><i class="fas fa-moon" id="themeIcon"></i> گۆڕینا ڕەنگی</button>
+                <button class="drawer-item logout-design" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> دەرکەفتن</button>
             </div>
         </aside>
 
-        <main class="chat-main glass-panel">
-            <header class="chat-header">
-                <div class="status-badge"><span class="dot"></span> Online</div>
-                <div class="header-center">
-                    <i class="fas fa-brain" style="color: #10a37f; margin-left: 8px;"></i>
-                    <span id="display-name">Nijyar AI</span>
-                </div>
-                <button id="themeToggle" class="theme-switch-btn" style="background: none; border: none; color: white; cursor: pointer; font-size: 20px;">
-                    <i class="fas fa-moon"></i>
-                </button>
-            </header>
+        <!-- Chat Main View -->
+        <main class="gpt-chat-main">
+            <div id="chatBox" class="chat-messages"></div>
 
-            <div id="chatBox"></div>
-
+            <!-- Artifacts Overlay -->
             <div id="artifacts-overlay" class="artifacts-hidden">
                 <div class="artifacts-header">
                     <span><i class="fas fa-laptop-code"></i> دەستکارییا ڕاستەوخۆ</span>
-                    <button onclick="window.closeArtifacts()" class="close-art-btn">×</button>
+                    <button id="closeArtifactsBtn" class="close-art-btn">×</button>
                 </div>
                 <iframe id="preview-frame"></iframe>
                 <div class="artifact-editor-box">
                     <input type="text" id="artifactPrompt" placeholder="بێژە بۆتی: ڕەنگێ وی سوور بکە...">
-                    <button id="updateArtifactBtn" onclick="window.updateArtifactWithAI()">
+                    <button id="updateArtifactBtn">
                         <i class="fas fa-magic"></i> گۆڕین
                     </button>
                 </div>
             </div>
 
-            <div class="input-area-container">
-                <div id="imagePreviewContainer" class="img-preview-box"></div>
-                <div class="input-wrapper">
-                    <label for="imageInput" class="icon-btn" title="پەڕاو یان وێنە (PDF/CSV/IMG)">
+            <!-- Input Area -->
+            <div class="gpt-input-container">
+                <div id="imagePreviewContainer" class="preview-container"></div>
+                <div class="gpt-input-box glass-panel">
+                    <button id="attachBtn" class="icon-btn" title="پەڕاو یان وێنە (PDF/CSV/IMG)">
                         <i class="fas fa-paperclip"></i>
-                    </label>
+                    </button>
                     <input type="file" id="imageInput" accept="image/*, application/pdf, text/csv, .csv" style="display:none;">
                     
-                    <button id="cameraBtn" class="icon-btn" title="ڤەکرنا کامێرایێ" onclick="window.captureMedia('camera')">
-                        <i class="fas fa-camera"></i>
-                    </button>
-                    <button id="screenBtn" class="icon-btn" title="شەیرکرنا شاشێ" onclick="window.captureMedia('screen')">
-                        <i class="fas fa-desktop"></i>
-                    </button>
-
-                    <button id="micBtn" class="icon-btn" title="دەنگ">
-                        <i class="fas fa-microphone"></i>
-                    </button>
+                    <button id="cameraBtn" class="icon-btn" title="ڤەکرنا کامێرایێ"><i class="fas fa-camera"></i></button>
+                    <button id="screenBtn" class="icon-btn" title="شەیرکرنا شاشێ"><i class="fas fa-desktop"></i></button>
+                    <button id="micBtn" class="icon-btn" title="دەنگ"><i class="fas fa-microphone"></i></button>
 
                     <textarea id="userInput" placeholder="پەیاما خۆ بنڤێسە (/agent, /گەنگەشە, /وێنە...)" rows="1"></textarea>
                     
-                    <button id="stopBtn" class="stop-btn" style="display:none;">
-                        <i class="fas fa-stop"></i>
-                    </button>
-
-                    <button id="sendBtn" class="send-btn">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
+                    <button id="stopBtn" class="icon-btn stop-btn" style="display:none; color:#ff4757;"><i class="fas fa-stop-circle"></i></button>
+                    <button id="sendBtn" class="send-btn"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Ad Space -->
+    <div id="ad-container" class="ad-container">
+        <ins class="adsbygoogle" style="display:inline-block;width:320px;height:50px" data-ad-client="ca-pub-7190630481565033" data-ad-slot="2419070037"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <!-- Profile -->
+    <div id="profileModal" class="modal-overlay">
+        <div class="auth-card glass-panel" style="padding:30px;">
+            <h3 style="color:white; margin-top:0;"><i class="fas fa-user-circle"></i> پڕۆفایل</h3>
+            <p style="color:rgba(255,255,255,0.7); margin:20px 0; font-size:18px; font-weight:bold;"><span id="display-name">بەکارھێنەر</span></p>
+            <button class="login-btn" id="closeProfileBtn" style="width:100%;">داخستن</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) {
@@ -226,7 +210,6 @@
             if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
         };
     </script>
-    
     <script type="module" src="main.js"></script>
 </body>
 </html>
