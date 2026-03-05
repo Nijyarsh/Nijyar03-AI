@@ -637,7 +637,7 @@ window.handleChat = async () => {
 };
 
 async function getAIResponse(p, img, mode) {
-    let model = img ? "llama-3.2-90b-vision-preview" : "llama-3.3-70b-versatile";
+    let model = img ? "meta-llama/llama-4-scout-17b-16e-instruct" : "llama-3.3-70b-versatile";
     let storage = getStorage(); let history = JSON.parse(storage.getItem(`chats_${window.loggedInUser}`)) || {};
     let currentHistory = history[window.currentChatId] && history[window.currentChatId].messages ? history[window.currentChatId].messages.slice(-6) : [];
     let recentMessages = currentHistory.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.msg }));
