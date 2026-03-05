@@ -1,25 +1,52 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// --- Stars Background ---
-function initSpaceDesign() {
-    if (document.getElementById('stars-container')) return;
-    const container = document.createElement('div');
-    container.id = 'stars-container';
-    Object.assign(container.style, { position: 'fixed', top: '0', left: '0', width: '100vw', height: '100vh', zIndex: '-1', pointerEvents: 'none' });
-    document.body.prepend(container);
+// --- Global UI Helpers ---
+window.toggleDrawer = () => { 
+    const drawer = document.getElementById('sideDrawer');
+    const overlay = document.getElementById('drawerOverlay');
+    const dropdown = document.getElementById('modelDropdown');
+    
+    if(drawer) drawer.classList.toggle('open'); 
+    if(overlay) overlay.classList.toggle('open'); 
+    if(dropdown) dropdown.classList.add('hidden'); 
+};
+window.toggleModelDropdown = () => {
+    const dropdown = document.getElementById('modelDropdown');
+    if(dropdown) dropdown.classList.toggle('hidden');
+};
+window.openProfile = () => {
+    const modal = document.getElementById('profileModal');
+    if(modal) modal.classList.add('open');
+};
+window.closeProfile = (e) => { 
+    if(e?.target?.classList.contains('modal-overlay') || e?.target?.tagName === 'BUTTON') {
+        document.getElementById('profileModal')?.classList.remove('open');
+    }
+};
+window.toggleTheme = () => { 
+    document.body.classList.toggle("light-mode"); 
+    const themeIcon = document.getElementById("themeIcon"); 
+    if(themeIcon) { 
+        themeIcon.className = document.body.classList.contains("light-mode") ? "fas fa-sun" : "fas fa-moon"; 
+    } 
+    localStorage.setItem("nijyar_theme", document.body.classList.contains("light-mode") ? "light" : "dark"); 
+};
+
+function initStars() {
+    if (document.getElementById('stars-container')?.children.length > 0) return;
+    const container = document.getElementById('stars-container');
+    if(!container) return;
     for (let i = 0; i < 80; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
+        const star = document.createElement('div'); star.className = 'star';
         const size = Math.random() * 2 + 1 + 'px';
         Object.assign(star.style, { width: size, height: size, position: 'absolute', backgroundColor: 'white', borderRadius: '50%', top: Math.random() * 100 + 'vh', left: Math.random() * 100 + 'vw', animation: `twinkle ${Math.random() * 3 + 2}s infinite ease-in-out` });
         container.appendChild(star);
     }
 }
 
-
-// Firebase Config
+// --- Firebase Config ---
 const firebaseConfig = {
   apiKey: "AIzaSyAZFC8BDGkR0u83UIGNKqwkWAobkFND7RY",
   authDomain: "nijyar-ai.firebaseapp.com",
@@ -35,18 +62,21 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
+provider.setCustomParameters({ prompt: 'select_account' });
+
 /* 🔒 NIJYAR PROTECTION ENGINE - V2 */
 const _0xpart1 = "gsk_";
 const _0xpart2 = "aYGteUTlVF1Qmw64WsCv"; 
 const _0xpart3 = "WGdyb3FYWUGnRmL4qSVXU91YO8Nfnp5W"; 
 const GROQ_API_KEY = _0xpart1 + _0xpart2 + _0xpart3;
-let currentChatId = null;
-let loggedInUser = "Guest"; 
-let isGuest = true; 
-let isTyping = false;
+
+window.currentChatId = null;
+window.loggedInUser = "Guest"; 
+window.isGuest = true; 
+window.isTyping = false;
 let selectedImageBase64 = null; 
 let abortController = null;
-let currentExpertMode = 'pro';
+window.currentExpertMode = 'pro';
 
 window.globalDocumentContext = ""; 
 
@@ -67,14 +97,16 @@ window.speakText = (text) => {
     const cleanText = text.replace(/```[\s\S]*?```/g, "").replace(/[#*`_]/g, "");
     const speech = new SpeechSynthesisUtterance(cleanText);
     const isAr = /[\u0600-\u06FF]/.test(cleanText);
-    speech.lang = isAr ? 'ar-SA' : (currentExpertMode === 'live_voice' ? 'en-US' : 'en-US');
+    speech.lang = isAr ? 'ar-SA' : (window.currentExpertMode === 'live_voice' ? 'en-US' : 'en-US');
     speech.rate = 0.9;
     window.speechSynthesis.speak(speech);
 };
 
-function getStorage() { return isGuest ? sessionStorage : localStorage; }
+// ✅ جیاکرنا مێژوویێ (ئەکاونت هەمیشەییە، مێڤان دەمکییە)
+function getStorage() { 
+    return window.isGuest ? sessionStorage : localStorage; 
+}
 
-// ✅ FIX: Smart Chat Memory Limit
 function updateLongTermMemory(userText) {
     let memory = localStorage.getItem("nijyar_long_memory") || "";
     if(userText.includes("ناڤێ من") || userText.includes("حەز دکەم") || userText.includes("ئەز ")) {
@@ -84,56 +116,67 @@ function updateLongTermMemory(userText) {
     }
 }
 
-window.setExpertMode = (mode, el) => {
-    currentExpertMode = mode;
+window.setExpertMode = (mode, name, el) => {
+    window.currentExpertMode = mode;
+    const modelText = document.getElementById('currentModelText');
+    if(modelText) modelText.innerHTML = name + ' <i class="fas fa-star" style="color:#d4af37; font-size:10px;"></i>';
     document.querySelectorAll('.mode-item').forEach(item => item.classList.remove('active'));
-    el.classList.add('active');
+    if(el) el.classList.add('active');
+    window.toggleModelDropdown();
 };
 
 window.copyToClipboard = (btn) => {
     const text = btn.closest('.msg').querySelector('.msg-content').innerText;
     navigator.clipboard.writeText(text); btn.innerText = "Copied! ✅";
-    setTimeout(() => btn.innerText = "Copy All 📋", 2000);
+    setTimeout(() => btn.innerHTML = "<i class='far fa-copy'></i> Copy", 2000);
 };
 
 window.copyRawCode = (btn) => {
     const code = btn.closest('.code-container').querySelector('code').innerText;
     navigator.clipboard.writeText(code); btn.innerText = "Copied! ✅";
-    setTimeout(() => btn.innerText = "Copy", 2000);
+    setTimeout(() => btn.innerText = "Copy Code", 2000);
 };
 
 window.removeSelectedImage = () => {
     selectedImageBase64 = null;
     const preview = document.getElementById("imagePreviewContainer");
     if(preview) preview.innerHTML = "";
-    document.getElementById("imageInput").value = "";
+    const imageInput = document.getElementById("imageInput");
+    if(imageInput) imageInput.value = "";
 };
 
+// ✅ چارەسەرییا کێشەیا سڕینا چاتان (Delete Chat)
 window.deleteChat = (e, id) => {
-    e.stopPropagation();
-    if(confirm("دێ ئەڤ چاتە هێتە سڕین؟")) {
-        let storage = getStorage(); let all = JSON.parse(storage.getItem(`chats_${loggedInUser}`)) || {};
-        delete all[id]; storage.setItem(`chats_${loggedInUser}`, JSON.stringify(all));
-        updateSidebar(); if(currentChatId == id) createNewChat();
+    if(e) e.stopPropagation();
+    if(confirm("دێ ئەڤ چاتە هێتە سڕین ب تەمامی؟")) {
+        let storage = getStorage(); 
+        let all = JSON.parse(storage.getItem(`chats_${window.loggedInUser}`)) || {};
+        delete all[id]; 
+        storage.setItem(`chats_${window.loggedInUser}`, JSON.stringify(all));
+        window.filterHistory(); 
+        if(window.currentChatId == id) window.createNewChat();
     }
 };
 
 function stopAllActions() {
     if (abortController) abortController.abort();
-    isTyping = false; window.speechSynthesis.cancel(); 
-    document.getElementById("stopBtn").style.display = "none";
+    window.isTyping = false; window.speechSynthesis.cancel(); 
+    const stopBtn = document.getElementById("stopBtn");
+    if(stopBtn) stopBtn.style.display = "none";
 }
 
 window.openArtifacts = (encodedCode) => {
     const overlay = document.getElementById("artifacts-overlay");
     const frame = document.getElementById("preview-frame");
-    overlay.classList.remove("artifacts-hidden");
-    frame.srcdoc = decodeURIComponent(encodedCode);
+    if(overlay) overlay.classList.remove("artifacts-hidden");
+    if(frame) frame.srcdoc = decodeURIComponent(encodedCode);
 };
 
-window.closeArtifacts = () => { document.getElementById("artifacts-overlay").classList.add("artifacts-hidden"); };
+window.closeArtifacts = () => { 
+    const overlay = document.getElementById("artifacts-overlay");
+    if(overlay) overlay.classList.add("artifacts-hidden"); 
+};
 
-// ✅ FIX: Auto Retry System
 async function safeFetch(url, options, retries = 3) {
     try {
         const res = await fetch(url, options);
@@ -144,7 +187,6 @@ async function safeFetch(url, options, retries = 3) {
         return res;
     } catch (error) {
         if (retries > 0 && error.name !== 'AbortError') {
-            console.warn(`پەیوەندی سەرکەوتوو نەبوو، دووبارە هەوڵ دەداتەوە... (${retries} ماوە)`);
             return await safeFetch(url, options, retries - 1);
         } else {
             throw error;
@@ -153,20 +195,21 @@ async function safeFetch(url, options, retries = 3) {
 }
 
 window.updateArtifactWithAI = async () => {
-    const prompt = document.getElementById("artifactPrompt").value.trim();
+    const promptInput = document.getElementById("artifactPrompt");
+    const prompt = promptInput ? promptInput.value.trim() : "";
     if(!prompt) return;
     const frame = document.getElementById("preview-frame");
-    const currentHTML = frame.srcdoc;
-    document.getElementById("artifactPrompt").value = "⏳ یێ دەستکاری دکەت...";
+    const currentHTML = frame ? frame.srcdoc : "";
+    if(promptInput) promptInput.value = "⏳ یێ دەستکاری دکەت...";
     try {
         const payload = `Modify the following HTML/CSS code according to this instruction: "${prompt}". Return ONLY the full updated code, nothing else.\n\nCode:\n\`\`\`html\n${currentHTML}\n\`\`\``;
         const res = await getAIResponse(payload, null, 'code');
         const newCode = res.replace(/```(html)?|```/g, "").trim();
-        frame.srcdoc = newCode;
-        document.getElementById("artifactPrompt").value = "";
+        if(frame) frame.srcdoc = newCode;
+        if(promptInput) promptInput.value = "";
         addMsg("ئەنجامێ کۆدی ل سەر داخوازیا تە هاتە گۆڕین 🎨", 'bot');
     } catch(e) {
-        document.getElementById("artifactPrompt").value = "❌ خەلەتییەک چێبوو.";
+        if(promptInput) promptInput.value = "❌ خەلەتییەک چێبوو.";
     }
 };
 
@@ -182,7 +225,9 @@ window.exportWord = () => {
 window.exportChat = () => {
     const chatBox = document.getElementById("chatBox");
     if (!chatBox || chatBox.innerHTML.trim() === "") return;
-    html2pdf().set({ margin: 0.5, filename: `Nijyar-AI.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: "#050610" }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }).from(chatBox).save();
+    if(window.html2pdf) {
+        html2pdf().set({ margin: 0.5, filename: `Nijyar-AI.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: "#050610" }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }).from(chatBox).save();
+    }
 };
 
 window.captureMedia = async (type) => {
@@ -250,73 +295,231 @@ window.captureMedia = async (type) => {
     }
 };
 
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        loggedInUser = user.uid; isGuest = false;
-        document.getElementById("login-screen").style.display = "none";
-        document.getElementById("main-app").style.display = "flex";
-        document.getElementById("display-name").innerText = user.displayName || "User";
-        updateSidebar(); if(!currentChatId) createNewChat();
-    } else {
-        document.getElementById("login-screen").style.display = "flex";
-        document.getElementById("main-app").style.display = "none";
-    }
-});
-
 let mediaRecorder; 
 let audioChunks = [];
 
+// ==========================================
+// ✅ AUTH LISTENER & EVENT DELEGATION
+// ==========================================
+
+getRedirectResult(auth).then((result) => {
+    if (result && result.user) {
+        console.log("Google Login Redirect Success!");
+    }
+}).catch((error) => {
+    console.error("Google Auth Redirect Error:", error);
+});
+
+onAuthStateChanged(auth, (user) => {
+    const loginScreen = document.getElementById("login-screen");
+    const mainApp = document.getElementById("main-app");
+    const displayName = document.getElementById("display-name");
+    const splash = document.getElementById('splash-screen');
+    
+    setTimeout(() => { if(splash) splash.classList.add('splash-hidden'); }, 1500);
+
+    if (user) {
+        window.loggedInUser = user.uid; window.isGuest = false;
+        if(loginScreen) loginScreen.style.display = "none";
+        if(mainApp) mainApp.style.display = "flex";
+        if(displayName) displayName.innerText = user.displayName || user.email.split('@')[0];
+        window.filterHistory(); if(!window.currentChatId) window.createNewChat();
+    } else {
+        if(loginScreen) loginScreen.style.display = "flex";
+        if(mainApp) mainApp.style.display = "none";
+    }
+});
+
+// ✅ گرێدانا ڕاستەوخۆ یا هەمی دوگمەیان د ناڤ DOMContentLoaded دا بۆ سەلامەتیێ
 document.addEventListener("DOMContentLoaded", () => {
-    initSpaceDesign();
+    initStars();
+    
     if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     if(window.mermaid) mermaid.initialize({ startOnLoad: false, theme: 'dark' });
 
-    // 👁️ زێدەکرنا کۆدێ نیشاندان/ڤەشارتنا پاسوۆردی ل ڤێرێ
-    const togglePassword = document.querySelector('#togglePassword');
-    const passwordInput = document.querySelector('#passInput');
+    if(localStorage.getItem("nijyar_theme") === "light") { 
+        document.body.classList.add("light-mode"); 
+        const tIcon = document.getElementById("themeIcon");
+        if(tIcon) tIcon.className = "fas fa-sun"; 
+    }
 
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', function () {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
+    // --- ڕێکخستنا مینیۆ و پەنجەرەیان ---
+    const menuToggleBtn = document.getElementById("menuToggleBtn");
+    if(menuToggleBtn) menuToggleBtn.addEventListener("click", (e) => { e.preventDefault(); window.toggleDrawer(); });
+    
+    const drawerOverlay = document.getElementById("drawerOverlay");
+    if(drawerOverlay) drawerOverlay.addEventListener("click", window.toggleDrawer);
+
+    const modelSelectorBtn = document.getElementById("modelSelectorBtn");
+    if(modelSelectorBtn) modelSelectorBtn.addEventListener("click", (e) => { e.preventDefault(); window.toggleModelDropdown(); });
+
+    const profileBtn = document.getElementById("profileBtn");
+    if(profileBtn) profileBtn.addEventListener("click", (e) => { e.preventDefault(); window.openProfile(); });
+
+    const closeProfileBtn = document.getElementById("closeProfileBtn");
+    if(closeProfileBtn) closeProfileBtn.addEventListener("click", (e) => { e.preventDefault(); document.getElementById('profileModal')?.classList.remove('open'); });
+
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+    if(themeToggleBtn) themeToggleBtn.addEventListener("click", (e) => { e.preventDefault(); window.toggleTheme(); });
+
+    const newChatTopBtn = document.getElementById("newChatTopBtn");
+    if(newChatTopBtn) newChatTopBtn.addEventListener("click", (e) => { e.preventDefault(); window.createNewChat(); });
+    
+    const drawerNewChatBtn = document.getElementById("drawerNewChatBtn");
+    if(drawerNewChatBtn) drawerNewChatBtn.addEventListener("click", (e) => { e.preventDefault(); window.createNewChat(); window.toggleDrawer(); });
+
+    // --- گرێدانا ڕاستەوخۆ بۆ دوگمەیێن PDF و Word ---
+    const exportPdfBtn = document.getElementById("exportPdfBtn");
+    if(exportPdfBtn) exportPdfBtn.addEventListener("click", (e) => { e.preventDefault(); window.exportChat(); });
+
+    const exportWordBtn = document.getElementById("exportWordBtn");
+    if(exportWordBtn) exportWordBtn.addEventListener("click", (e) => { e.preventDefault(); window.exportWord(); });
+
+    // --- مۆدێلێن AI ---
+    document.querySelectorAll('.mode-item').forEach(item => {
+        item.addEventListener("click", (e) => {
+            e.preventDefault();
+            const btn = e.currentTarget;
+            window.setExpertMode(btn.dataset.mode, btn.dataset.name, btn);
+        });
+    });
+
+    // --- دوگمەیێن لۆگینێ ---
+    const googleBtn = document.getElementById("googleBtn");
+    if (googleBtn) {
+        googleBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                if (error.code === 'auth/popup-blocked' || error.message.includes('popup')) {
+                    try { await signInWithRedirect(auth, provider); } catch(err) { alert("کێشە د لۆگینێ دا: " + err.message); }
+                } else { alert("نەشیا لۆگین بکەت ب گووگڵ: " + error.message); }
+            }
+        });
+    }
+
+    const signInBtn = document.getElementById("signInBtn");
+    if(signInBtn) {
+        signInBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("emailInput")?.value.trim();
+            const pass = document.getElementById("passInput")?.value;
+            if (!email || !pass) return alert("تکایە هەردوو خانەیان پڕ بکە!");
+            const originalHtml = signInBtn.innerHTML; signInBtn.innerHTML = "⏳..."; 
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                signInBtn.innerHTML = originalHtml;
+            } catch (error) {
+                alert("ئیمەیڵ یان پەیڤا نهێنی خەڵەتە!");
+                signInBtn.innerHTML = originalHtml;
+            }
+        });
+    }
+
+    const signUpBtn = document.getElementById("signUpBtn");
+    if(signUpBtn) {
+        signUpBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("emailInput")?.value.trim();
+            const pass = document.getElementById("passInput")?.value;
+            if (!email || !pass) return alert("تکایە هەردوو خانەیان پڕ بکە!");
+            if (pass.length < 6) return alert("پەیڤا نهێنی دڤێت ژ ٦ پیتان پتر بیت!");
+            const originalHtml = signUpBtn.innerHTML; signUpBtn.innerHTML = "⏳..."; 
+            try {
+                await createUserWithEmailAndPassword(auth, email, pass);
+                signUpBtn.innerHTML = originalHtml;
+                alert("ئەکاونت ب سەرکەفتییانە دروست بوو! 🚀");
+            } catch (error) {
+                if (error.code === 'auth/email-already-in-use') alert("ئەڤ ئیمەیڵە بەری نها هاتییە تۆمارکرن!");
+                else alert("خەلەتی: " + error.message);
+                signUpBtn.innerHTML = originalHtml;
+            }
+        });
+    }
+
+    const guestBtn = document.getElementById("guestBtn");
+    if(guestBtn) {
+        guestBtn.addEventListener("click", (e) => { 
+            e.preventDefault();
+            window.loggedInUser = "Guest_" + Date.now(); 
+            window.isGuest = true; 
+            const loginScreen = document.getElementById("login-screen");
+            const mainApp = document.getElementById("main-app");
+            const displayName = document.getElementById("display-name");
+            if(loginScreen) loginScreen.style.display = "none"; 
+            if(mainApp) mainApp.style.display = "flex"; 
+            if(displayName) displayName.innerText = "Guest User"; 
+            window.createNewChat(); 
+        });
+    }
+
+    // ✅ چارەسەرییا سڕینا مێژوویێ بۆ مێڤان (Guest) دەمێ دەرکەفتنێ
+    const logoutBtn = document.getElementById("logoutBtn");
+    if(logoutBtn) {
+        logoutBtn.addEventListener("click", (e) => { 
+            e.preventDefault();
+            if(!window.isGuest) {
+                signOut(auth).then(() => location.reload()); 
+            } else { 
+                sessionStorage.removeItem(`chats_${window.loggedInUser}`);
+                sessionStorage.clear(); 
+                location.reload(); 
+            } 
+        });
+    }
+
+    const togglePasswordWrapper = document.getElementById("togglePasswordWrapper");
+    if(togglePasswordWrapper) {
+        togglePasswordWrapper.addEventListener("click", () => {
+            const passInput = document.getElementById('passInput');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (passInput && eyeIcon) {
+                if (passInput.type === 'password') {
+                    passInput.type = 'text';
+                    eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+                } else {
+                    passInput.type = 'password';
+                    eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+                }
+            }
         });
     }
 
     const userInput = document.getElementById("userInput");
-    if(userInput) { userInput.addEventListener("input", function() { this.style.height = "auto"; this.style.height = (this.scrollHeight) + "px"; }); }
-
-    document.getElementById("stopBtn").onclick = stopAllActions;
-
-    // ✅ FIX: Mic Memory Leak Fix
-    window.addEventListener("beforeunload", () => {
-        if(mediaRecorder && mediaRecorder.state === "recording") {
-            mediaRecorder.stop();
-        }
-    });
-
-    const themeBtn = document.getElementById("themeToggle");
-    if(themeBtn) {
-        themeBtn.onclick = () => {
-            document.body.classList.toggle("light-mode");
-            const isLight = document.body.classList.contains("light-mode");
-            themeBtn.innerText = isLight ? "🌙" : "🌓";
-            localStorage.setItem("nijyar_theme", isLight ? "light" : "dark");
-            if(window.mermaid) mermaid.initialize({ theme: isLight ? 'default' : 'dark' });
-        };
-        if(localStorage.getItem("nijyar_theme") === "light") { document.body.classList.add("light-mode"); themeBtn.innerText = "🌙"; }
+    if(userInput) { 
+        userInput.addEventListener("input", function() { this.style.height = "auto"; this.style.height = (this.scrollHeight) + "px"; }); 
+        userInput.addEventListener("keydown", (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.handleChat(); } });
     }
+
+    const sendBtn = document.getElementById("sendBtn");
+    if(sendBtn) sendBtn.addEventListener("click", (e) => { e.preventDefault(); window.handleChat(); });
+
+    const stopBtn = document.getElementById("stopBtn");
+    if(stopBtn) stopBtn.addEventListener("click", (e) => { e.preventDefault(); stopAllActions(); });
+
+    const searchInp = document.getElementById("historySearch");
+    if(searchInp) searchInp.addEventListener("input", window.filterHistory);
+
+    const attachBtn = document.getElementById("attachBtn");
+    if(attachBtn) attachBtn.addEventListener("click", (e) => { e.preventDefault(); document.getElementById('imageInput')?.click(); });
+
+    const cameraBtn = document.getElementById("cameraBtn");
+    if(cameraBtn) cameraBtn.addEventListener("click", (e) => { e.preventDefault(); window.captureMedia('camera'); });
+
+    const screenBtn = document.getElementById("screenBtn");
+    if(screenBtn) screenBtn.addEventListener("click", (e) => { e.preventDefault(); window.captureMedia('screen'); });
 
     const micBtn = document.getElementById("micBtn");
     if (micBtn) {
-        micBtn.onclick = async () => {
-            if (isTyping) return;
-            if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); micBtn.style.background = ""; micBtn.innerHTML = '<i class="fas fa-microphone"></i>'; return; }
+        micBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            if (window.isTyping) return;
+            if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); micBtn.style.color = ""; return; }
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream); audioChunks = [];
-                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                mediaRecorder.ondataavailable = (ev) => audioChunks.push(ev.data);
                 mediaRecorder.onstop = async () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                     const formData = new FormData(); formData.append("file", audioBlob, "audio.webm"); formData.append("model", "whisper-large-v3");
@@ -324,145 +527,76 @@ document.addEventListener("DOMContentLoaded", () => {
                     try {
                         const res = await safeFetch("https://api.groq.com/openai/v1/audio/transcriptions", { method: "POST", headers: { "Authorization": `Bearer ${GROQ_API_KEY}` }, body: formData });
                         const data = await res.json();
-                        if(data.text && userInput) { userInput.value = data.text; if(currentExpertMode === 'live_voice') { userInput.disabled = false; handleChat(); } }
+                        if(data.text && userInput) { userInput.value = data.text; if(window.currentExpertMode === 'live_voice') { userInput.disabled = false; window.handleChat(); } }
                     } catch (err) { if(userInput) userInput.value = "❌ هەڵە د دەنگی دا."; } 
                     finally { if(userInput) { userInput.disabled = false; userInput.dispatchEvent(new Event('input')); } }
                 };
-                mediaRecorder.start(); micBtn.style.background = "#ff4b2b"; micBtn.innerHTML = '<i class="fas fa-stop" style="color:white;"></i>';
+                mediaRecorder.start(); micBtn.style.color = "#ff4757";
             } catch (err) { alert("تکایە دەسەڵاتی مایکڕۆفۆنێ بدە."); }
-        };
-    }
-
-    const googleBtn = document.getElementById("googleBtn");
-    if (googleBtn) {
-        googleBtn.addEventListener("click", () => {
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    console.log("سەرکەفتی بوو ب گووگڵ: ", result.user.email);
-                }).catch((error) => {
-                    console.error("ئیرۆر د گووگڵ دا: ", error);
-                    alert("خەلەتییەک د چوونەژوورێ دا چێبوو.");
-                });
         });
     }
 
-    // --- چوونە ژوورڤە (Sign In) ---
-    document.getElementById("signInBtn")?.addEventListener("click", async () => {
-        const email = document.getElementById("emailInput")?.value.trim();
-        const password = document.getElementById("passInput")?.value;
-        const btn = document.getElementById("signInBtn");
-        
-        if (!email || !password) {
-            alert("تکایە هەردوو خانەیان پڕ بکە!");
-            return;
-        }
-        
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = "⏳..."; 
-        
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            btn.innerHTML = originalHtml;
-        } catch (error) {
-            if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
-                alert("ئیمەیڵ یان پەیڤا نهێنی خەڵەتە!");
-            } else {
-                alert("خەلەتی د لۆگینێ دا: " + error.message);
+    const imageInput = document.getElementById("imageInput");
+    if(imageInput) {
+        imageInput.addEventListener("change", async (e) => {
+            const file = e.target.files[0]; if (!file) return;
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas'); const MAX_WIDTH = 512; const MAX_HEIGHT = 512; 
+                        let width = img.width; let height = img.height;
+                        if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } else if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                        canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+                        selectedImageBase64 = canvas.toDataURL('image/jpeg', 0.5); showImagePreview(selectedImageBase64);
+                    }; img.src = event.target.result;
+                }; reader.readAsDataURL(file);
+            } else if (file.name.endsWith('.csv') || file.type === 'text/csv') {
+                if(userInput) { userInput.value = "⏳ دێ CSV خوینیت..."; userInput.disabled = true; }
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const csvData = event.target.result;
+                    if(userInput) { userInput.value = `ئەڤە داتایێن فایلێ CSV یە، تکایە شیکار بکە:\n\n${csvData.substring(0,2000)}`; userInput.dispatchEvent(new Event('input')); userInput.disabled = false; }
+                }; reader.readAsText(file); e.target.value = "";
+            } else if (file.type === 'application/pdf') {
+                if(userInput) { userInput.value = "⏳ دێ پەڕاوی خوینیت..."; userInput.disabled = true; }
+                try {
+                    const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise; let fullText = ``;
+                    for (let i = 1; i <= pdf.numPages; i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); fullText += textContent.items.map(item => item.str).join(' ') + "\n"; }
+                    window.globalDocumentContext = `[زانیاریێن پەڕاوێ ${file.name}]:\n` + fullText.substring(0, 10000); 
+                    addMsg(`📚 پەڕاوێ (${file.name}) هاتە خویندن و خەزنکرن. نها دشێی پرسیاران ل سەر بکەی.`, 'bot');
+                } catch (err) { if(userInput) userInput.value = "❌ هەڵە د خواندنێ دا."; } finally { if(userInput) userInput.disabled = false; e.target.value = ""; }
             }
-            btn.innerHTML = originalHtml;
-        }
-    });
-
-    // --- دروستکرنا ئەکاونتی (Sign Up) ---
-    document.getElementById("signUpBtn")?.addEventListener("click", async () => {
-        const email = document.getElementById("emailInput")?.value.trim();
-        const password = document.getElementById("passInput")?.value;
-        const btn = document.getElementById("signUpBtn");
-        
-        if (!email || !password) {
-            alert("تکایە هەردوو خانەیان پڕ بکە!");
-            return;
-        }
-        if (password.length < 6) {
-            alert("پەیڤا نهێنی دڤێت ژ ٦ پیتان پتر بیت!");
-            return;
-        }
-        
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = "⏳..."; 
-        
-        try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            btn.innerHTML = originalHtml;
-            alert("ئەکاونت ب سەرکەفتییانە دروست بوو! 🚀");
-        } catch (error) {
-            if (error.code === 'auth/email-already-in-use') {
-                alert("ئەڤ ئیمەیڵە بەری نها هاتییە تۆمارکرن!");
-            } else {
-                alert("خەلەتی: " + error.message);
-            }
-            btn.innerHTML = originalHtml;
-        }
-    });
-
-    document.getElementById("guestBtn")?.addEventListener("click", () => { loggedInUser = "Guest_" + Date.now(); isGuest = true; document.getElementById("login-screen").style.display = "none"; document.getElementById("main-app").style.display = "flex"; document.getElementById("display-name").innerText = "Guest User"; createNewChat(); });
-    document.getElementById("logoutBtn")?.addEventListener("click", () => { if(!isGuest) signOut(auth).then(() => location.reload()); else { sessionStorage.clear(); location.reload(); } });
-    if(userInput) { userInput.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChat(); } }; }
-    document.getElementById("sendBtn")?.addEventListener("click", handleChat);
-    document.getElementById("newChatBtn")?.addEventListener("click", createNewChat);
-
-    document.getElementById("imageInput")?.addEventListener("change", async (e) => {
-        const file = e.target.files[0]; if (!file) return;
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas'); const MAX_WIDTH = 512; const MAX_HEIGHT = 512; 
-                    let width = img.width; let height = img.height;
-                    if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } else if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                    canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
-                    selectedImageBase64 = canvas.toDataURL('image/jpeg', 0.5); showImagePreview(selectedImageBase64);
-                }; img.src = event.target.result;
-            }; reader.readAsDataURL(file);
-        } else if (file.name.endsWith('.csv') || file.type === 'text/csv') {
-            if(userInput) { userInput.value = "⏳ دێ CSV خوینیت..."; userInput.disabled = true; }
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const csvData = event.target.result;
-                if(userInput) { userInput.value = `ئەڤە داتایێن فایلێ CSV یە، تکایە شیکار بکە و پوختەیەک بدە:\n\n${csvData.substring(0,2000)}`; userInput.dispatchEvent(new Event('input')); userInput.disabled = false; }
-            }; reader.readAsText(file); e.target.value = "";
-        } else if (file.type === 'application/pdf') {
-            if(userInput) { userInput.value = "⏳ دێ پەڕاوی خوینیت و خەزن کەت..."; userInput.disabled = true; }
-            try {
-                const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise; let fullText = ``;
-                for (let i = 1; i <= pdf.numPages; i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); fullText += textContent.items.map(item => item.str).join(' ') + "\n"; }
-                
-                window.globalDocumentContext = `[زانیاریێن پەڕاوێ ${file.name}]:\n` + fullText.substring(0, 10000); 
-                addMsg(`📚 پەڕاوێ یاسایی یان زانستی (${file.name}) هاتە خویندن و خەزنکرن. نها دشێی پرسیاران ل سەر بکەی.`, 'bot');
-            } catch (err) { if(userInput) userInput.value = "❌ هەڵە د خواندنێ دا."; } finally { if(userInput) userInput.disabled = false; e.target.value = ""; }
-        }
-    });
+        });
+    }
 });
 
-function createNewChat() {
-    if(isTyping) return; currentChatId = Date.now().toString();
+window.addEventListener("beforeunload", () => {
+    if(mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+    }
+});
+// ==========================================
+
+window.createNewChat = () => {
+    if(window.isTyping) return; window.currentChatId = Date.now().toString();
     const chatBox = document.getElementById("chatBox");
-    if(chatBox) { chatBox.innerHTML = ""; addMsg("سڵاڤ ! ئەز نژیار AI مە، چەوان دشێم هاریکار بم؟", 'bot'); }
+    if(chatBox) { chatBox.innerHTML = ""; addMsg("سڵاڤ! ئەز نژیار AI مە، چەوان دشێم هاریکار بم؟", 'bot'); }
     const userInput = document.getElementById("userInput");
-    if(userInput) { userInput.value = ""; userInput.style.height = "auto"; userInput.focus(); }
-    updateSidebar();
-}
+    if(userInput) { userInput.value = ""; userInput.style.height = "auto"; }
+    window.filterHistory();
+};
 
-async function handleChat() {
+window.handleChat = async () => {
     const inp = document.getElementById("userInput"); let text = inp ? inp.value.trim() : ""; const stopBtn = document.getElementById("stopBtn");
-    if(!text && !selectedImageBase64) return; if(isTyping) return; if(stopBtn) stopBtn.style.display = "block";
+    if(!text && !selectedImageBase64) return; if(window.isTyping) return; if(stopBtn) stopBtn.style.display = "block";
 
-    if(currentExpertMode === 'agent' || text.startsWith("/agent")) {
+    if(window.currentExpertMode === 'agent' || text.startsWith("/agent")) {
         const task = text.replace("/agent", "").trim();
         addMsg(`🤖 بریکار پێکهات... کار: ${task}`, 'user');
         if(inp) { inp.value = ""; inp.style.height = "auto"; }
-        isTyping = true; abortController = new AbortController();
+        window.isTyping = true; abortController = new AbortController();
         const load1 = addMsg("⏳ قۆناغا 1: داڕشتنا پلانێ...", 'bot');
         try {
             const plan = await getAIResponse(`وەک Auto-Agent پلانێک دابنێ بۆ جێبەجێکردنی ئەم کارە: ${task}`, null, 'pro');
@@ -470,8 +604,8 @@ async function handleChat() {
             const load2 = addMsg("⏳ قۆناغا 2: جێبەجێکرن...", 'bot');
             const finalRes = await getAIResponse(`ئەمە پلانەکەیە: ${plan}. تکایە بە وردی هەموو کارەکە جێبەجێ بکە و ئەنجامی کۆتایییم پێ بدە.`, null, 'pro');
             load2.innerHTML = `<div class="msg-content"><b>✅ ئەنجامێ کۆتایی:</b><br>${finalRes}</div>`;
-            isTyping = false; if(stopBtn) stopBtn.style.display = "none";
-        } catch(e) { load1.innerHTML = "Error in Agent."; isTyping = false; }
+            window.isTyping = false; if(stopBtn) stopBtn.style.display = "none";
+        } catch(e) { load1.innerHTML = "Error in Agent."; window.isTyping = false; }
         return;
     }
 
@@ -481,82 +615,42 @@ async function handleChat() {
         if(inp) { inp.value = ""; inp.style.height = "auto"; } return;
     }
 
-    if (text.startsWith("/youtube") || text.startsWith("/یوتووب")) {
-        const url = text.replace(/^\/\w+\s*/, "").trim();
-        text = `ئەڤە لینکا ڤیدیۆیا یوتووبە (${url})، تکایە پوختەیەکا گشتی و بابەتی ل سەر ڤێ چەندێ بۆ من بنڤێسە.`;
-    }
-
-    if (text.startsWith("/mindmap") || text.startsWith("/نەخشە")) {
-        const topic = text.replace(/^\/\w+\s*/, "").trim();
-        text = `تکایە نەخشەیەکی مێشکی بۆ "${topic}" دروست بکە ب بەکارهێنانی کۆدی mermaid.`;
-    }
-
-    if (text.startsWith("/لینک") || text.startsWith("/link")) {
-        const url = text.replace(/^\/\w+\s*/, "").trim(); addMsg(text, 'user'); if(inp) { inp.value = ""; inp.style.height = "auto"; }
-        const loadingDiv = addMsg(`⏳ خویندنا لینکێ: ${url}...`, 'bot'); isTyping = true; abortController = new AbortController();
-        try {
-            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`); const data = await res.json();
-            const parser = new DOMParser(); const doc = parser.parseFromString(data.contents, "text/html");
-            text = `تێکستێ مالپەڕێ (${url}):\n\n${doc.body.innerText.replace(/\s+/g, ' ').substring(0, 3000)}`;
-            loadingDiv.remove();
-        } catch (err) { loadingDiv.querySelector('.msg-content').innerText = "❌ نەشیا لینکێ بخوێنیت."; isTyping = false; return; }
-    } else if (text.startsWith("/ocr") || text.startsWith("/خویندن")) {
-        if(!selectedImageBase64) { addMsg("تکایە وێنەیەک بار بکە.", 'bot'); return; }
-        text = "تکایە هەمی تێکستێ ناڤ ڤی وێنەی دەربهێنە.";
-    }
-
-    const isDebate = text.startsWith("/گەنگەشە") || text.startsWith("/debate");
-    if(isDebate) {
-        const debateTopic = text.replace(/^\/\w+\s*/, "").trim();
-        addMsg(`گەنگەشە ل سەر: ${debateTopic}`, 'user'); if(inp) { inp.value = ""; inp.style.height = "auto"; }
-        isTyping = true; abortController = new AbortController();
-        const loadD1 = addMsg("⏳ پارێزەر...", 'bot');
-        try {
-            const res1 = await getAIResponse(`وەک پارێزەر ڕای خۆ ل سەر: ${debateTopic} بێژە`, null, 'legal');
-            loadD1.innerHTML = `<div class="msg-content"><b>👨‍⚖️ پارێزەر:</b><br>${res1}</div>`;
-            const loadD2 = addMsg("⏳ کۆمیدی...", 'bot');
-            const res2 = await getAIResponse(`بە گاڵتەجاڕی وەڵامی ئەمە بدەوە: "${res1}"`, null, 'comidy');
-            loadD2.innerHTML = `<div class="msg-content"><b>😂 کۆمیدی:</b><br>${res2}</div>`;
-            isTyping = false; if(stopBtn) stopBtn.style.display = "none";
-        } catch(e) { loadD1.innerHTML = "Error"; isTyping = false; } return;
-    }
-
     updateLongTermMemory(text);
     if(selectedImageBase64) addMsg(`<img src="${selectedImageBase64}" style="max-width:200px; border-radius:10px;">`, 'user');
     if(text && !text.startsWith("تێکستێ مالپەڕێ")) addMsg(text.length > 500 ? text.substring(0, 500) + "..." : text, 'user');
-    saveMsg(loggedInUser, currentChatId, text, 'user'); 
+    saveHistory(window.currentChatId, text, 'user'); 
     
     const currentImg = selectedImageBase64;
     if(inp && !text.startsWith("تێکستێ مالپەڕێ")) { inp.value = ""; inp.style.height = "auto"; }
-    removeSelectedImage();
+    window.removeSelectedImage();
     
-    isTyping = true; abortController = new AbortController(); 
+    window.isTyping = true; abortController = new AbortController(); 
     const loadingDiv = addMsg("...", 'bot');
 
     try {
-        const res = await getAIResponse(text || "شرۆڤە بکە", currentImg, currentExpertMode);
-        typeWriter(res, currentChatId, loadingDiv);
+        const res = await getAIResponse(text || "شرۆڤە بکە", currentImg, window.currentExpertMode);
+        typeWriter(res, window.currentChatId, loadingDiv);
     } catch (error) { 
         if (error.name !== 'AbortError') loadingDiv.querySelector('.msg-content').innerText = "Error: " + error.message;
-        isTyping = false; if(stopBtn) stopBtn.style.display = "none";
+        window.isTyping = false; if(stopBtn) stopBtn.style.display = "none";
     }
-}
+};
 
 async function getAIResponse(p, img, mode) {
-    let model = img ? "meta-llama/llama-4-scout-17b-16e-instruct" : "llama-3.3-70b-versatile";
-    let storage = getStorage(); let history = JSON.parse(storage.getItem(`chats_${loggedInUser}`)) || {};
-    let currentHistory = history[currentChatId] || [];
-    let recentMessages = currentHistory.slice(-8).map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.msg }));
+    let model = img ? "llama-3.2-90b-vision-preview" : "llama-3.3-70b-versatile";
+    let storage = getStorage(); let history = JSON.parse(storage.getItem(`chats_${window.loggedInUser}`)) || {};
+    let currentHistory = history[window.currentChatId] && history[window.currentChatId].messages ? history[window.currentChatId].messages.slice(-6) : [];
+    let recentMessages = currentHistory.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.msg }));
 
     let sysPrompt = aiPersonalities[mode] || aiPersonalities.pro;
     
-    sysPrompt += "\n تێبینی گرنگ: ئەگەر بەکارهێنەر پرسیاری کرد 'تۆ کێیت' یان 'کێ دروستی کردوویت' یان 'who are you'، دەبێت بڵێیت 'من سیستمێکی ژیری دەستکردم و لەلایەن نژیار (Nijyar) دروستکراوم'. دەبێت ئەم وەڵامە بە هەمان ئەو زمانە بێت کە بەکارهێنەر پرسیارەکەی پێ کردووە (بۆ نموونە بە عەرەبی، ئیسپانی، ئینگلیزی، هتد).";
+    sysPrompt += "\n تێبینی گرنگ: ئەگەر بەکارهێنەر پرسیاری کرد 'تۆ کێیت' یان 'کێ دروستی کردوویت'، دەبێت بڵێیت 'من سیستمێکی ژیری دەستکردم و لەلایەن نژیار (Nijyar) دروستکراوم'.";
 
     let longMemory = localStorage.getItem("nijyar_long_memory");
     if(longMemory) sysPrompt += `\n[تێبینی دەربارەی نژیار: ${longMemory}]`;
     
     if(window.globalDocumentContext) {
-        sysPrompt += `\n\nئەڤە زانیاریێن پەڕاوێ یە کو پێویستە ل سەر ڤێ بەرسڤێ بدەی:\n${window.globalDocumentContext}`;
+        sysPrompt += `\n\nئەڤە زانیاریێن پەڕاوێ یە:\n${window.globalDocumentContext}`;
     }
 
     let messagesArray = img ? [{ role: "user", content: [{ type: "text", text: p }, { type: "image_url", image_url: { url: img } }] }] : [{ role: "system", content: sysPrompt }, ...recentMessages, { role: "user", content: p }];
@@ -570,19 +664,28 @@ async function getAIResponse(p, img, mode) {
     return responseData.choices[0].message.content;
 }
 
-function addMsg(t, s) {
+function addMsg(text, sender, parseCode=false) {
     const chatBox = document.getElementById("chatBox"); if(!chatBox) return;
-    const d = document.createElement("div"); d.className = `msg ${s}`; d.style.direction = (t.includes("```")) ? "ltr" : "rtl";
+    const d = document.createElement("div"); d.className = `msg ${sender}`; 
+    
+    const direction = (text.includes("تێبینی") || text.includes("قۆناغا") || /[\u0600-\u06FF]/.test(text)) ? "rtl" : "ltr";
+    d.style.direction = direction;
+    d.style.textAlign = direction === "rtl" ? "right" : "left";
+    
     d.innerHTML = `<div class="msg-content"></div>`;
-    if (t === "...") d.querySelector('.msg-content').innerText = "..."; else renderFormattedMessage(d, t);
-    chatBox.appendChild(d); chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' }); return d;
+    const contentArea = d.querySelector('.msg-content');
+    if (text === "...") contentArea.innerText = "..."; 
+    else renderFormattedMessage(d, text);
+    
+    chatBox.appendChild(d); chatBox.scrollTop = chatBox.scrollHeight; return d;
 }
 
+// ✅ ChatGPT Style Code Render
 function renderFormattedMessage(div, rawText) {
     const contentArea = div.querySelector('.msg-content'); if(!contentArea) return;
     
-    let formatted = rawText.replace(/```(html|mermaid)?([\s\S]*?)```/g, (match, lang, code) => {
-        const language = lang ? lang.toLowerCase() : 'javascript';
+    let formatted = rawText.replace(/```(html|css|javascript|js|python|mermaid)?([\s\S]*?)```/g, (match, lang, code) => {
+        const language = lang ? lang.toLowerCase() : 'code';
         if(language === 'mermaid') {
             const id = 'mermaid-' + Date.now() + Math.floor(Math.random()*1000);
             setTimeout(() => { if(window.mermaid) mermaid.render(id, code.trim()).then(r => { document.getElementById(id+'-container').innerHTML = r.svg; }); }, 100);
@@ -590,65 +693,106 @@ function renderFormattedMessage(div, rawText) {
         }
         const isHTML = language === 'html' || code.includes('<!DOCTYPE html>');
         const encodedCode = encodeURIComponent(code.trim());
+        
         return `<div class="code-container" style="background:#1e1e1e; border:1px solid #444; border-radius:8px; margin:15px 0; direction:ltr; text-align:left;">
                     <div class="code-header" style="background:#333; color:#efefef; padding:5px 15px; display:flex; justify-content:space-between; font-size:12px; border-radius:8px 8px 0 0;">
                         <span>${language.toUpperCase()}</span>
                         <div>
-                            ${isHTML ? `<button onclick="openArtifacts('${encodedCode}')" style="background:var(--primary); border:none; color:white; padding:3px 10px; border-radius:4px; margin-right:5px; cursor:pointer;">👁️ Preview</button>` : ''}
-                            <button onclick="window.copyRawCode(this)" style="background:#555; border:none; color:white; padding:3px 10px; border-radius:4px; cursor:pointer;">Copy</button>
+                            ${isHTML ? `<button class="copy-code-btn" onclick="window.openArtifacts('${encodedCode}')" style="background:var(--primary); margin-right:5px; border:none; color:white; padding:3px 8px; border-radius:4px; cursor:pointer;">👁️ Preview</button>` : ''}
+                            <button class="copy-code-btn" onclick="window.copyRawCode(this)" style="background:#555; border:none; color:white; padding:3px 8px; border-radius:4px; cursor:pointer;">Copy Code</button>
                         </div>
                     </div>
                     <pre style="margin:0; padding:15px; overflow-x:auto;"><code class="language-${language}" style="color:#dcdcdc; font-family:monospace;">${code.trim().replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
                 </div>`;
     });
 
-    if (!formatted.includes('code-container') && !formatted.includes('<img') && !formatted.includes('mermaid-diagram')) formatted = formatted.replace(/\n/g, '<br>');
-    
-    if (window.DOMPurify) {
-        contentArea.innerHTML = DOMPurify.sanitize(formatted, { ADD_TAGS: ['button', 'img', 'iframe'], ADD_ATTR: ['onclick', 'srcdoc', 'class', 'style', 'id'] });
-    } else {
-        contentArea.innerHTML = formatted;
+    if (!formatted.includes('code-container') && !formatted.includes('<img') && !formatted.includes('mermaid-diagram')) {
+        formatted = formatted.replace(/\n/g, '<br>');
     }
     
+    if (window.DOMPurify) contentArea.innerHTML = DOMPurify.sanitize(formatted, { ADD_TAGS: ['button', 'img', 'iframe'], ADD_ATTR: ['onclick', 'src', 'class', 'style', 'id'] });
+    else contentArea.innerHTML = formatted;
+    
+    if (window.Prism) Prism.highlightAllUnder(div);
+    
     if (div.classList.contains('bot') && rawText !== "...") {
-        const footer = document.createElement('div'); footer.className = 'msg-footer'; footer.style.cssText = "margin-top:8px; display:flex; gap:10px; justify-content: flex-start;";
+        const footer = document.createElement('div'); footer.style.cssText = "margin-top:8px; display:flex; gap:10px; justify-content: flex-start;";
         footer.innerHTML = `<button onclick="window.copyToClipboard(this)" style="background:rgba(255,255,255,0.1); border:none; color:#ccc; padding:3px 8px; border-radius:5px; cursor:pointer; font-size:11px;">Copy 📋</button>
                             <button onclick="window.speakText(this.closest('.msg').querySelector('.msg-content').innerText)" style="background:rgba(255,255,255,0.1); border:none; color:#ccc; padding:3px 8px; border-radius:5px; cursor:pointer; font-size:11px;">Listen 🔊</button>`;
         div.appendChild(footer);
     }
-    if (window.Prism) Prism.highlightAllUnder(div);
+    document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
 }
 
 function typeWriter(text, chatId, targetDiv) {
-    let i = 0; isTyping = true; const contentArea = targetDiv.querySelector('.msg-content');
+    let i = 0; window.isTyping = true; const contentArea = targetDiv.querySelector('.msg-content');
     if(!contentArea) return; contentArea.innerHTML = "";
     const interval = setInterval(() => {
-        if(i < text.length && isTyping) {
+        if(i < text.length && window.isTyping) {
             if(text.includes('<img') && i === 0) { contentArea.innerHTML = text; clearInterval(interval); finalize(); return; }
             contentArea.innerHTML += text.charAt(i); i++;
             document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
         } else { clearInterval(interval); finalize(); }
-    }, 20);
+    }, 15);
 
     function finalize() {
-        isTyping = false; if(document.getElementById("stopBtn")) document.getElementById("stopBtn").style.display = "none";
-        renderFormattedMessage(targetDiv, text); saveMsg(loggedInUser, chatId, text, 'bot'); updateSidebar();
-        if(currentExpertMode === 'live_voice') window.speakText(text);
+        window.isTyping = false; const stopBtn = document.getElementById("stopBtn"); if(stopBtn) stopBtn.style.display = "none";
+        renderFormattedMessage(targetDiv, text); saveHistory(window.currentChatId, text, 'bot'); window.filterHistory();
+        if(window.currentExpertMode === 'live_voice') window.speakText(text);
     }
 }
 
-function saveMsg(u, id, m, s) { let storage = getStorage(); let all = JSON.parse(storage.getItem(`chats_${u}`)) || {}; if(!all[id]) all[id] = []; all[id].push({msg: m, sender: s}); storage.setItem(`chats_${u}`, JSON.stringify(all)); }
-
-function updateSidebar() {
-    const list = document.getElementById("historyList"); if(!list) return; list.innerHTML = "";
-    let storage = getStorage(); let all = JSON.parse(storage.getItem(`chats_${loggedInUser}`)) || {};
-    Object.keys(all).sort((a,b)=>b-a).forEach(id => {
-        const item = document.createElement("div"); item.className = "history-item";
-        item.innerHTML = `<div style="display:flex; align-items:center; gap:8px;"><i class="fas fa-comment-alt" style="font-size:12px; opacity:0.6;"></i><span>Chat ${new Date(parseInt(id)).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span></div><span class="del-chat-btn" onclick="window.deleteChat(event, '${id}')">×</span>`;
-        item.onclick = () => { currentChatId = id; const chatBox = document.getElementById("chatBox"); if(chatBox) { chatBox.innerHTML = ""; if(all[id]) all[id].forEach(c => addMsg(c.msg, c.sender)); } };
-        list.appendChild(item);
-    });
+function saveHistory(id, msg, sender) {
+    let storage = getStorage();
+    let all = JSON.parse(storage.getItem(`chats_${window.loggedInUser}`)) || {};
+    if(!all[id]) all[id] = [];
+    all[id].push({msg: msg, sender: sender});
+    storage.setItem(`chats_${window.loggedInUser}`, JSON.stringify(all));
 }
+
+window.filterHistory = () => {
+    const list = document.getElementById("historyList"); if(!list) return; list.innerHTML = "";
+    let storage = getStorage();
+    let all = JSON.parse(storage.getItem(`chats_${window.loggedInUser}`)) || {};
+    
+    const searchInput = document.getElementById("historySearch");
+    const searchText = searchInput ? searchInput.value.toLowerCase() : "";
+
+    Object.keys(all).sort((a,b)=>b-a).forEach(id => {
+        let chatData = all[id];
+        if(!chatData || chatData.length === 0) return;
+        
+        let title = chatData[0].msg.substring(0, 25) + "...";
+        if(title.toLowerCase().includes(searchText)) {
+            let item = document.createElement("div"); 
+            item.className = "history-item";
+            
+            let titleSpan = document.createElement("span");
+            titleSpan.style.cssText = "flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;";
+            titleSpan.innerHTML = `<i class="far fa-comment-alt"></i> ${title}`;
+            
+            // ✅ چارەسەرییا دوگمەیا سڕینێ (Trash Icon)
+            let delIcon = document.createElement("i");
+            delIcon.className = "fas fa-trash-alt";
+            delIcon.style.cssText = "color:#ff4757; opacity:0.8; padding-right:10px; cursor:pointer;";
+            delIcon.onclick = (e) => { 
+                e.stopPropagation();
+                window.deleteChat(e, id);
+            };
+            
+            item.appendChild(titleSpan);
+            item.appendChild(delIcon);
+
+            item.onclick = (e) => { 
+                if(e.target === delIcon) return;
+                window.currentChatId = id; const box = document.getElementById("chatBox"); if(box) box.innerHTML = "";
+                chatData.forEach(c => addMsg(c.msg, c.sender, c.sender === 'bot')); 
+                if(window.innerWidth < 768) window.toggleDrawer();
+            };
+            list.appendChild(item);
+        }
+    });
+};
 
 function showImagePreview(src) {
     const previewContainer = document.getElementById("imagePreviewContainer");
