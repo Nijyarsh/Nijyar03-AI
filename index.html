@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- ✅ چارەسەرییا کێشەیا گووگڵ: ڕێدان ب هەمی پەیوەندییان دا کو نەزڤڕیتەڤە -->
-    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com; connect-src * 'unsafe-inline' https://api.groq.com; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
     <meta name="google-adsense-account" content="ca-pub-7190630481565033">
     <title>Nijyar AI - Ultimate Master</title>
     <link rel="manifest" href="manifest.json">
@@ -29,16 +29,7 @@
 </head>
 <body class="dark-mode"> 
 
-    <!-- Splash Screen -->
-    <div id="splash-screen" class="splash-screen">
-        <div class="splash-content" style="text-align: center; width: 100%;">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px; flex-direction: row-reverse;">
-                <img src="logo.png" alt="Nijyar AI" style="width: 80px; height: 80px; border-radius: 15px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/80?text=AI'">
-                <h1 class="splash-text" style="color: #fff; font-family: sans-serif; letter-spacing: 2px; margin: 0; font-size: 32px;">NIJYAR AI</h1>
-            </div>
-            <p class="splash-sub" style="color: rgba(255,255,255,0.7); font-size: 16px;">سیستەمێ ژیرییا دەستکرد ب زمانێ کوردی</p>
-        </div>
-    </div>
+    <!-- 🌟 تێبینی: Splash Screen ب تەمامی هاتە ڕاکرن بۆ نەهێلانا جەمەدبوونێ 🌟 -->
 
     <!-- Backgrounds -->
     <div class="aurora-container">
@@ -151,7 +142,7 @@
             <div id="artifacts-overlay" class="artifacts-hidden">
                 <div class="artifacts-header">
                     <span><i class="fas fa-laptop-code"></i> دەستکارییا ڕاستەوخۆ</span>
-                    <button id="closeArtifactsBtn" class="close-art-btn">×</button>
+                    <button id="closeArtifactsBtn" class="close-art-btn"><i class="fas fa-times"></i></button>
                 </div>
                 <iframe id="preview-frame"></iframe>
                 <div class="artifact-editor-box">
