@@ -57,12 +57,18 @@ const firebaseConfig = {
   measurementId: "G-LBQS1KH12B"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
+let app, auth, db, provider;
 
-provider.setCustomParameters({ prompt: 'select_account' });
+// ✅ گەرەنتییا پاراستنێ ژ کراشبوونا فایربەیس ل سەر ئەندرۆیدێ
+try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+} catch (error) {
+    console.error("Firebase Init Error", error);
+}
 
 /* 🔒 NIJYAR PROTECTION ENGINE - V2 */
 const _0xpart1 = "gsk_";
@@ -102,7 +108,6 @@ window.speakText = (text) => {
     window.speechSynthesis.speak(speech);
 };
 
-// ✅ جیاکرنا مێژوویێ (ئەکاونت هەمیشەییە، مێڤان دەمکییە)
 function getStorage() { 
     return window.isGuest ? sessionStorage : localStorage; 
 }
@@ -134,7 +139,7 @@ window.copyToClipboard = (btn) => {
 window.copyRawCode = (btn) => {
     const code = btn.closest('.code-container').querySelector('code').innerText;
     navigator.clipboard.writeText(code); btn.innerText = "Copied! ✅";
-    setTimeout(() => btn.innerText = "Copy Code", 2000);
+    setTimeout(() => btn.innerHTML = "Copy Code", 2000);
 };
 
 window.removeSelectedImage = () => {
@@ -145,7 +150,6 @@ window.removeSelectedImage = () => {
     if(imageInput) imageInput.value = "";
 };
 
-// ✅ چارەسەرییا کێشەیا سڕینا چاتان (Delete Chat)
 window.deleteChat = (e, id) => {
     if(e) e.stopPropagation();
     if(confirm("دێ ئەڤ چاتە هێتە سڕین ب تەمامی؟")) {
@@ -165,6 +169,7 @@ function stopAllActions() {
     if(stopBtn) stopBtn.style.display = "none";
 }
 
+// ✅ Artifacts Logic
 window.openArtifacts = (encodedCode) => {
     const overlay = document.getElementById("artifacts-overlay");
     const frame = document.getElementById("preview-frame");
@@ -176,23 +181,6 @@ window.closeArtifacts = () => {
     const overlay = document.getElementById("artifacts-overlay");
     if(overlay) overlay.classList.add("artifacts-hidden"); 
 };
-
-async function safeFetch(url, options, retries = 3) {
-    try {
-        const res = await fetch(url, options);
-        if (!res.ok) {
-            const errorData = await res.json().catch(() => ({}));
-            throw new Error(`HTTP Error: ${res.status} - ${errorData.error?.message || 'Unknown'}`);
-        }
-        return res;
-    } catch (error) {
-        if (retries > 0 && error.name !== 'AbortError') {
-            return await safeFetch(url, options, retries - 1);
-        } else {
-            throw error;
-        }
-    }
-}
 
 window.updateArtifactWithAI = async () => {
     const promptInput = document.getElementById("artifactPrompt");
@@ -212,6 +200,23 @@ window.updateArtifactWithAI = async () => {
         if(promptInput) promptInput.value = "❌ خەلەتییەک چێبوو.";
     }
 };
+
+async function safeFetch(url, options, retries = 3) {
+    try {
+        const res = await fetch(url, options);
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(`HTTP Error: ${res.status} - ${errorData.error?.message || 'Unknown'}`);
+        }
+        return res;
+    } catch (error) {
+        if (retries > 0 && error.name !== 'AbortError') {
+            return await safeFetch(url, options, retries - 1);
+        } else {
+            throw error;
+        }
+    }
+}
 
 window.exportWord = () => {
     const chatBox = document.getElementById("chatBox");
@@ -302,35 +307,38 @@ let audioChunks = [];
 // ✅ AUTH LISTENER & EVENT DELEGATION
 // ==========================================
 
-getRedirectResult(auth).then((result) => {
-    if (result && result.user) {
-        console.log("Google Login Redirect Success!");
-    }
-}).catch((error) => {
-    console.error("Google Auth Redirect Error:", error);
-});
+if (auth) {
+    getRedirectResult(auth).then((result) => {
+        if (result && result.user) {
+            console.log("Google Login Redirect Success!");
+        }
+    }).catch((error) => {
+        console.error("Google Auth Redirect Error:", error);
+    });
 
-onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, (user) => {
+        const loginScreen = document.getElementById("login-screen");
+        const mainApp = document.getElementById("main-app");
+        const displayName = document.getElementById("display-name");
+        
+        if (user) {
+            window.loggedInUser = user.uid; window.isGuest = false;
+            if(loginScreen) loginScreen.style.display = "none";
+            if(mainApp) mainApp.style.display = "flex";
+            if(displayName) displayName.innerText = user.displayName || user.email.split('@')[0];
+            window.filterHistory(); if(!window.currentChatId) window.createNewChat();
+        } else {
+            if(loginScreen) loginScreen.style.display = "flex";
+            if(mainApp) mainApp.style.display = "none";
+        }
+    });
+} else {
+    // If Firebase completely fails to load, fallback safely
     const loginScreen = document.getElementById("login-screen");
-    const mainApp = document.getElementById("main-app");
-    const displayName = document.getElementById("display-name");
-    const splash = document.getElementById('splash-screen');
-    
-    setTimeout(() => { if(splash) splash.classList.add('splash-hidden'); }, 1500);
+    if(loginScreen) loginScreen.style.display = "flex";
+}
 
-    if (user) {
-        window.loggedInUser = user.uid; window.isGuest = false;
-        if(loginScreen) loginScreen.style.display = "none";
-        if(mainApp) mainApp.style.display = "flex";
-        if(displayName) displayName.innerText = user.displayName || user.email.split('@')[0];
-        window.filterHistory(); if(!window.currentChatId) window.createNewChat();
-    } else {
-        if(loginScreen) loginScreen.style.display = "flex";
-        if(mainApp) mainApp.style.display = "none";
-    }
-});
-
-// ✅ گرێدانا ڕاستەوخۆ یا هەمی دوگمەیان د ناڤ DOMContentLoaded دا بۆ سەلامەتیێ
+// ✅ گرێدانا ڕاستەوخۆ یا هەمی دوگمەیان د ناڤ DOMContentLoaded دا
 document.addEventListener("DOMContentLoaded", () => {
     initStars();
     
@@ -368,12 +376,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const drawerNewChatBtn = document.getElementById("drawerNewChatBtn");
     if(drawerNewChatBtn) drawerNewChatBtn.addEventListener("click", (e) => { e.preventDefault(); window.createNewChat(); window.toggleDrawer(); });
 
-    // --- گرێدانا ڕاستەوخۆ بۆ دوگمەیێن PDF و Word ---
     const exportPdfBtn = document.getElementById("exportPdfBtn");
     if(exportPdfBtn) exportPdfBtn.addEventListener("click", (e) => { e.preventDefault(); window.exportChat(); });
 
     const exportWordBtn = document.getElementById("exportWordBtn");
     if(exportWordBtn) exportWordBtn.addEventListener("click", (e) => { e.preventDefault(); window.exportWord(); });
+
+    // ✅ گرێدانا دوگمەیێن Artifacts کو بەری نها ئیرۆر ددا
+    const closeArtifactsBtn = document.getElementById("closeArtifactsBtn");
+    if(closeArtifactsBtn) closeArtifactsBtn.addEventListener("click", (e) => { e.preventDefault(); window.closeArtifacts(); });
+
+    const updateArtifactBtn = document.getElementById("updateArtifactBtn");
+    if(updateArtifactBtn) updateArtifactBtn.addEventListener("click", (e) => { e.preventDefault(); window.updateArtifactWithAI(); });
 
     // --- مۆدێلێن AI ---
     document.querySelectorAll('.mode-item').forEach(item => {
@@ -389,12 +403,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (googleBtn) {
         googleBtn.addEventListener("click", async (e) => {
             e.preventDefault();
+            if(!auth) return alert("فایربەیس نەهاتییە گرێدان.");
             try {
-                await signInWithPopup(auth, provider);
+                const isWebView = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)|Android.*(wv|\.0\.0\.0)/.test(navigator.userAgent);
+                if(isWebView) {
+                    await signInWithRedirect(auth, provider);
+                } else {
+                    await signInWithPopup(auth, provider);
+                }
             } catch (error) {
-                if (error.code === 'auth/popup-blocked' || error.message.includes('popup')) {
-                    try { await signInWithRedirect(auth, provider); } catch(err) { alert("کێشە د لۆگینێ دا: " + err.message); }
-                } else { alert("نەشیا لۆگین بکەت ب گووگڵ: " + error.message); }
+                if (error.code === 'auth/popup-blocked') {
+                    try { await signInWithRedirect(auth, provider); } catch(err) { alert("کێشە: " + err.message); }
+                } else { alert("کێشە د لۆگینێ دا: " + error.message); }
             }
         });
     }
@@ -403,6 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(signInBtn) {
         signInBtn.addEventListener("click", async (e) => {
             e.preventDefault();
+            if(!auth) return;
             const email = document.getElementById("emailInput")?.value.trim();
             const pass = document.getElementById("passInput")?.value;
             if (!email || !pass) return alert("تکایە هەردوو خانەیان پڕ بکە!");
@@ -421,6 +442,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(signUpBtn) {
         signUpBtn.addEventListener("click", async (e) => {
             e.preventDefault();
+            if(!auth) return;
             const email = document.getElementById("emailInput")?.value.trim();
             const pass = document.getElementById("passInput")?.value;
             if (!email || !pass) return alert("تکایە هەردوو خانەیان پڕ بکە!");
@@ -454,12 +476,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ✅ چارەسەرییا سڕینا مێژوویێ بۆ مێڤان (Guest) دەمێ دەرکەفتنێ
     const logoutBtn = document.getElementById("logoutBtn");
     if(logoutBtn) {
         logoutBtn.addEventListener("click", (e) => { 
             e.preventDefault();
-            if(!window.isGuest) {
+            if(!window.isGuest && auth) {
                 signOut(auth).then(() => location.reload()); 
             } else { 
                 sessionStorage.removeItem(`chats_${window.loggedInUser}`);
@@ -577,6 +598,7 @@ window.addEventListener("beforeunload", () => {
         mediaRecorder.stop();
     }
 });
+
 // ==========================================
 
 window.createNewChat = () => {
@@ -694,15 +716,15 @@ function renderFormattedMessage(div, rawText) {
         const isHTML = language === 'html' || code.includes('<!DOCTYPE html>');
         const encodedCode = encodeURIComponent(code.trim());
         
-        return `<div class="code-container" style="background:#1e1e1e; border:1px solid #444; border-radius:8px; margin:15px 0; direction:ltr; text-align:left;">
-                    <div class="code-header" style="background:#333; color:#efefef; padding:5px 15px; display:flex; justify-content:space-between; font-size:12px; border-radius:8px 8px 0 0;">
+        return `<div class="code-container">
+                    <div class="code-header">
                         <span>${language.toUpperCase()}</span>
-                        <div>
-                            ${isHTML ? `<button class="copy-code-btn" onclick="window.openArtifacts('${encodedCode}')" style="background:var(--primary); margin-right:5px; border:none; color:white; padding:3px 8px; border-radius:4px; cursor:pointer;">👁️ Preview</button>` : ''}
-                            <button class="copy-code-btn" onclick="window.copyRawCode(this)" style="background:#555; border:none; color:white; padding:3px 8px; border-radius:4px; cursor:pointer;">Copy Code</button>
+                        <div style="display:flex; gap:5px;">
+                            ${isHTML ? `<button class="copy-code-btn" style="background:#10a37f; border-color:#10a37f;" onclick="window.openArtifacts('${encodedCode}')">👁️ Preview</button>` : ''}
+                            <button class="copy-code-btn" onclick="window.copyRawCode(this)">Copy Code</button>
                         </div>
                     </div>
-                    <pre style="margin:0; padding:15px; overflow-x:auto;"><code class="language-${language}" style="color:#dcdcdc; font-family:monospace;">${code.trim().replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
+                    <pre><code class="language-${language}">${code.trim().replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
                 </div>`;
     });
 
