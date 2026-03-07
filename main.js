@@ -59,7 +59,6 @@ const firebaseConfig = {
 
 let app, auth, db, provider;
 
-// ✅ گەرەنتییا پاراستنێ ژ کراشبوونا فایربەیس ل سەر ئەندرۆیدێ
 try {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
@@ -333,12 +332,11 @@ if (auth) {
         }
     });
 } else {
-    // If Firebase completely fails to load, fallback safely
     const loginScreen = document.getElementById("login-screen");
     if(loginScreen) loginScreen.style.display = "flex";
 }
 
-// ✅ گرێدانا ڕاستەوخۆ یا هەمی دوگمەیان د ناڤ DOMContentLoaded دا
+// ✅ Event Listeners (DOM Ready)
 document.addEventListener("DOMContentLoaded", () => {
     initStars();
     
@@ -351,7 +349,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if(tIcon) tIcon.className = "fas fa-sun"; 
     }
 
-    // --- ڕێکخستنا مینیۆ و پەنجەرەیان ---
     const menuToggleBtn = document.getElementById("menuToggleBtn");
     if(menuToggleBtn) menuToggleBtn.addEventListener("click", (e) => { e.preventDefault(); window.toggleDrawer(); });
     
@@ -382,14 +379,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const exportWordBtn = document.getElementById("exportWordBtn");
     if(exportWordBtn) exportWordBtn.addEventListener("click", (e) => { e.preventDefault(); window.exportWord(); });
 
-    // ✅ گرێدانا دوگمەیێن Artifacts کو بەری نها ئیرۆر ددا
     const closeArtifactsBtn = document.getElementById("closeArtifactsBtn");
     if(closeArtifactsBtn) closeArtifactsBtn.addEventListener("click", (e) => { e.preventDefault(); window.closeArtifacts(); });
 
     const updateArtifactBtn = document.getElementById("updateArtifactBtn");
     if(updateArtifactBtn) updateArtifactBtn.addEventListener("click", (e) => { e.preventDefault(); window.updateArtifactWithAI(); });
 
-    // --- مۆدێلێن AI ---
     document.querySelectorAll('.mode-item').forEach(item => {
         item.addEventListener("click", (e) => {
             e.preventDefault();
@@ -398,7 +393,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- دوگمەیێن لۆگینێ ---
     const googleBtn = document.getElementById("googleBtn");
     if (googleBtn) {
         googleBtn.addEventListener("click", async (e) => {
