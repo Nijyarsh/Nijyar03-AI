@@ -1,6 +1,3 @@
-/* =============================================
-   NIJYAR AI - MASTER UNIFIED DESIGN 2026
-   ============================================= */
 :root { 
     --primary: #10a37f; 
     --bg: #050610; 
@@ -214,7 +211,7 @@ body, html {
     color: #888; 
 }
 
-/* ✅ MENU BAR (Top Bar + Drawer) */
+/* ✅ MENU BAR */
 .app-container { 
     display: flex; 
     flex-direction: column; 
@@ -307,14 +304,6 @@ body, html {
 }
 .mode-item.active i { 
     color: var(--primary); 
-}
-.mode-item[data-mode="legal"].active { 
-    background: rgba(212, 175, 55, 0.15) !important; 
-    border-color: var(--law-gold) !important; 
-    color: var(--law-gold) !important; 
-}
-.mode-item[data-mode="legal"].active i { 
-    color: var(--law-gold) !important; 
 }
 
 /* DRAWER SIDEBAR */
