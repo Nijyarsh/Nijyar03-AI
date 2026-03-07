@@ -1,11 +1,11 @@
 {
-  "name": "Nijyar AI - Master",
+  "name": "Nijyar AI Master",
   "short_name": "Nijyar AI",
-  "description": "سیستەمێ زیرەکیا دەستکرد یێ نژیار",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#050610",
   "theme_color": "#10a37f",
+  "description": "سیستەمێ ژیرییا دەستکرد ب زمانێ کوردی",
   "icons": [
     {
       "src": "logo.png",
