@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- ✅ چارەسەرییا کێشەیا گووگڵ: ڕێدان ب هەمی پەیوەندییان دا کو نەزڤڕیتەڤە -->
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com; connect-src * 'unsafe-inline' https://api.groq.com; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
-    <meta name="google-adsense-account" content="ca-pub-7190630481565033">
+    
     <title>Nijyar AI - Ultimate Master</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Libraries -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
@@ -29,15 +27,11 @@
 </head>
 <body class="dark-mode"> 
 
-    <!-- 🌟 تێبینی: Splash Screen ب تەمامی هاتە ڕاکرن بۆ نەهێلانا جەمەدبوونێ 🌟 -->
-
-    <!-- Backgrounds -->
     <div class="aurora-container">
         <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div>
     </div>
     <div id="stars-container"></div>
 
-    <!-- Login Screen -->
     <div id="login-screen" class="auth-wrapper">
         <div class="auth-card glass-panel">
             <div class="auth-header">
@@ -77,10 +71,8 @@
         </div>
     </div>
 
-    <!-- ✅ MENU BAR & MAIN APP -->
     <div id="main-app" class="app-container" style="display: none;">
         
-        <!-- Top Menu Bar -->
         <header class="gpt-top-bar glass-panel-header">
             <div class="top-bar-right">
                 <button class="icon-btn-top" id="menuToggleBtn"><i class="fas fa-bars"></i></button>
@@ -95,7 +87,6 @@
             </div>
         </header>
 
-        <!-- Dropdown Menu for AI Models -->
         <div id="modelDropdown" class="model-dropdown glass-panel hidden">
             <div class="mode-item active" data-mode="pro" data-name="Nijyar AI"><i class="fas fa-robot"></i> پڕۆفیشناڵ</div>
             <div class="mode-item" data-mode="legal" data-name="پ. یاسایی"><i class="fas fa-gavel"></i> پسپۆڕێ یاسایی</div>
@@ -108,7 +99,6 @@
             <div class="mode-item" data-mode="comidy" data-name="کۆمیدی"><i class="fas fa-laugh"></i> کۆمیدی بادینی</div>
         </div>
 
-        <!-- Sidebar Drawer -->
         <div id="drawerOverlay" class="drawer-overlay"></div>
         <aside id="sideDrawer" class="gpt-drawer glass-panel-drawer">
             <div class="drawer-header">
@@ -134,11 +124,9 @@
             </div>
         </aside>
 
-        <!-- Chat Main View -->
         <main class="gpt-chat-main">
             <div id="chatBox" class="chat-messages"></div>
 
-            <!-- Artifacts Overlay -->
             <div id="artifacts-overlay" class="artifacts-hidden">
                 <div class="artifacts-header">
                     <span><i class="fas fa-laptop-code"></i> دەستکارییا ڕاستەوخۆ</span>
@@ -153,7 +141,6 @@
                 </div>
             </div>
 
-            <!-- Input Area -->
             <div class="gpt-input-container">
                 <div id="imagePreviewContainer" class="preview-container"></div>
                 <div class="gpt-input-box glass-panel">
@@ -175,13 +162,6 @@
         </main>
     </div>
 
-    <!-- Ad Space -->
-    <div id="ad-container" class="ad-container">
-        <ins class="adsbygoogle" style="display:inline-block;width:320px;height:50px" data-ad-client="ca-pub-7190630481565033" data-ad-slot="2419070037"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-
-    <!-- Profile -->
     <div id="profileModal" class="modal-overlay">
         <div class="auth-card glass-panel" style="padding:30px;">
             <h3 style="color:white; margin-top:0;"><i class="fas fa-user-circle"></i> پڕۆفایل</h3>
@@ -190,7 +170,6 @@
         </div>
     </div>
 
-    <!-- Scripts -->
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) {
